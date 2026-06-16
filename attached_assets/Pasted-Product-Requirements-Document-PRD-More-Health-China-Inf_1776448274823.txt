@@ -1,0 +1,656 @@
+Product Requirements Document (PRD)
+
+More Health China Influencer Dashboard
+
+Project Type: Seven-Figure Enterprise Platform
+Client: More Health
+Target Users: China-based distributors rebranded as Influencers / Brand Partners
+Primary Platforms: Mobile-first Web App + Desktop SaaS Dashboard
+Design Standard: Tesla-level premium simplicity, modern fintech SaaS, Apple-quality UX
+
+⸻
+
+1. Executive Summary
+
+Build a next-generation influencer dashboard for More Health that replaces outdated MLM-style back offices with a modern creator-commerce operating system.
+
+This dashboard should make users feel like:
+
+* They are building a business
+* They are growing a personal brand
+* They are earning real income
+* They are part of a premium modern company
+* Their dashboard is clear, motivating, and exciting
+
+The system must avoid old-school MLM language. We will translate legacy functionality into modern influencer / affiliate terminology.
+
+This is not a “back office.”
+
+This is an:
+
+Influencer Business Hub
+
+⸻
+
+2. Core Product Vision
+
+Transform a traditional distributor account into a modern creator dashboard where users can:
+
+* Shop products
+* Enroll customers
+* Grow referrals
+* Track earnings
+* Manage subscriptions
+* Monitor business growth
+* Access their personal storefront
+* Withdraw earnings
+* Manage profile & account settings
+
+⸻
+
+3. User Types
+
+Primary User
+
+Influencer / Brand Partner
+
+China-based independent seller who:
+
+* Buys products
+* Refers customers
+* Shares links/content
+* Earns commissions
+* Builds a team (hidden softly)
+* Wants growth stats
+
+⸻
+
+Secondary Users
+
+Customer
+
+Referred buyer.
+
+Admin
+
+Corporate management managing data.
+
+⸻
+
+4. Design Direction
+
+Visual Language
+
+Tesla + Stripe + Apple + Notion + Revolut
+
+UI Principles
+
+* Clean white / black palette
+* Soft gradients
+* Smooth motion
+* Rounded cards
+* Premium spacing
+* Fast load times
+* High readability
+* Minimal clutter
+
+⸻
+
+Mobile First
+
+Primary usage likely mobile in China.
+
+Mobile UX
+
+* Bottom nav or hamburger
+* Fast thumb interactions
+* Large cards
+* Swipeable reports
+* Expandable sections
+
+⸻
+
+Desktop UX
+
+Traditional SaaS layout:
+
+Left Sidebar Nav
+
+Persistent nav.
+
+Top Header
+
+* User profile
+* Notifications
+* Wallet balance
+* Language toggle
+* Search
+
+⸻
+
+5. Navigation Structure
+
+Main Navigation
+
+1. Dashboard
+2. Shop Products
+3. Enroll New Partner
+4. My Storefront
+5. Wallet
+6. Subscriptions
+7. Earnings
+8. Analytics
+9. Orders
+10. Network Growth
+11. Account Settings
+12. Support
+13. Logout
+
+⸻
+
+6. Dashboard Homepage
+
+Goal
+
+Single glance business overview.
+
+⸻
+
+Top Hero Section
+
+“Welcome back, Brady”
+
+Display:
+
+* Current Rank / Status
+* Wallet Balance
+* This Week Earnings
+* This Month Sales
+* Active Subscribers
+
+⸻
+
+KPI Cards
+
+Card Row 1
+
+* Total Orders
+* Referred Orders
+* Personal Orders
+* Repeat Customers
+
+Card Row 2
+
+* This Week Earnings
+* Pending Payouts
+* Store Visits
+* Video Views
+
+Card Row 3
+
+* Subscription Customers
+* Conversion Rate
+* Avg Order Value
+* Team Growth
+
+⸻
+
+Charts
+
+Sales Trend
+
+7 / 30 / 90 day graph
+
+Earnings Trend
+
+Weekly payout growth
+
+Traffic Sources
+
+* WeChat
+* Douyin
+* Xiaohongshu
+* Direct Link
+* Repeat Buyers
+
+⸻
+
+Recent Activity Feed
+
+* John bought collagen
+* Lisa subscribed monthly
+* You earned ¥120 commission
+* 3 new profile visits
+* Wallet payout sent
+
+⸻
+
+7. Shop Products
+
+Purpose
+
+Take user to storefront.
+
+Features
+
+* Open store in new tab
+* Auto-login
+* Personalized pricing if applicable
+* Share products directly
+
+⸻
+
+8. Enroll New Partner
+
+Modernized wording:
+
+Instead of “Enroll Distributor”
+
+Use:
+
+* Invite Creator
+* Start New Partner
+* Build Your Team
+
+Flow
+
+Collect:
+
+* Name
+* Phone
+* Email
+* Placement preference
+* Starter kit
+* Shipping address
+* Payment
+
+⸻
+
+9. My Personal Website
+
+Personalized Storefront
+
+Example:
+
+morehealth.com/brady
+
+Display:
+
+* Share button
+* QR Code
+* Click stats
+* Conversion stats
+* Best products sold
+
+⸻
+
+10. Wallet (External Link)
+
+PayVue integration
+
+Show Snapshot Before Redirect
+
+* Current Balance
+* Pending Balance
+* Last Withdrawal
+* Next Payout Date
+
+CTA:
+
+* Open Wallet
+
+⸻
+
+11. Subscriptions Management
+
+Automatic Orders / Autoship
+
+Show Subscription Cards
+
+Each subscription displays:
+
+* Status
+* Next Ship Date
+* Amount
+* Products
+* Frequency
+* Payment Method
+* Shipping Address
+
+⸻
+
+Actions
+
+* Pause
+* Skip Next Shipment
+* Edit Products
+* Change Address
+* Change Payment
+* Cancel
+* Add Another Subscription
+
+⸻
+
+12. Orders Section
+
+Tabs
+
+My Orders
+
+Personal purchases.
+
+Customer Orders
+
+Referred customers.
+
+Subscription Orders
+
+Recurring shipments.
+
+⸻
+
+Order Row Fields
+
+* Order ID
+* Customer Name
+* Product(s)
+* Amount
+* Commission Earned
+* Date
+* Status
+* Tracking Number
+
+⸻
+
+13. Earnings / Commission Statements
+
+Purpose
+
+Most emotionally important page.
+
+⸻
+
+Weekly Statement Cards
+
+* Week Ending Date
+* Gross Earnings
+* Bonuses
+* Retail Profit
+* Referral Income
+* Rank Bonus
+* Adjustments
+* Net Paid
+
+CTA:
+
+* View in PayVue
+
+⸻
+
+Earnings Graphs
+
+* Weekly earnings growth
+* Monthly totals
+* Best month ever
+* YoY comparison
+
+⸻
+
+Motivation Layer
+
+“You earned more than 72% of active partners this month.”
+
+⸻
+
+14. Analytics Section
+
+Rebrand boring reports into creator metrics.
+
+⸻
+
+KPI Reports
+
+Weekly / Monthly
+
+* Store Visits
+* Product Clicks
+* Video Views
+* QR Code Scans
+* Social Media Reach
+* Orders Generated
+* Repeat Buyers
+* Conversion Rate
+* Revenue Generated
+* Average Order Value
+
+⸻
+
+Charts
+
+* Week over week traffic
+* Product interest heatmap
+* Content performance
+* Platform breakdown
+
+⸻
+
+15. Network Growth (Holding Tank Rebrand)
+
+Avoid MLM wording publicly.
+
+Instead of Holding Tank use:
+
+Suggested Names
+
+* Opportunity Queue
+* Pending Placements
+* New Partner Queue
+* Team Builder Queue
+
+Best choice:
+
+Team Builder Queue
+
+⸻
+
+Features
+
+* Pending enrollments
+* Unplaced partners
+* Suggested placements
+* Binary tree visual if needed
+* Drag/drop placement tool
+
+⸻
+
+16. Settings / Personal Information
+
+Tabs
+
+Profile
+
+* Name
+* Birthday
+* Email
+* Phone
+* Language
+* Avatar upload
+
+Addresses
+
+* Billing
+* Shipping
+
+Security
+
+* Change password
+* 2FA optional
+* Login history
+
+Account Records
+
+* Joined date
+* Rank history
+* Subscription edits
+* Password changes
+* Compliance notices
+
+Placement Preferences
+
+* Left / Right
+* Auto placement rules
+
+⸻
+
+17. Notifications Center
+
+Push in-app alerts:
+
+* New commission earned
+* Subscription expiring
+* Customer order placed
+* Rank achieved
+* Wallet payout processed
+
+⸻
+
+18. Support Center
+
+* FAQ
+* Live chat
+* Submit ticket
+* WhatsApp / WeChat support
+* Video tutorials
+
+⸻
+
+19. Localization Requirements
+
+Languages
+
+* Simplified Chinese (primary)
+* English (secondary)
+
+Regional Needs
+
+* RMB currency
+* China timezone
+* Local mobile formatting
+* QR code first UX
+
+⸻
+
+20. Technical Architecture
+
+Frontend
+
+* React / Next.js preferred
+* Tailwind UI
+* PWA capable
+
+Backend
+
+* Node.js / Java / Spring acceptable
+* API-first
+
+Data Sources
+
+* Legacy MLM system
+* Orders DB
+* Subscription DB
+* PayVue payout data
+* Website analytics
+
+⸻
+
+21. Key Integrations
+
+Commerce
+
+Shopify or existing commerce engine
+
+Payments
+
+PayVue
+
+Analytics
+
+GA4 / internal event system
+
+SMS / Email
+
+Transactional alerts
+
+⸻
+
+22. Performance Standards
+
+* Mobile load under 2.5 sec
+* Dashboard API under 1 sec cached
+* 99.9 uptime
+* Enterprise security
+
+⸻
+
+23. Emotional UX Layer
+
+Every page should reinforce:
+
+* Progress
+* Momentum
+* Earnings
+* Opportunity
+* Simplicity
+
+⸻
+
+24. Replit Build Request
+
+What To Design First
+
+Phase 1 Clickable Prototype
+
+1. Login Page
+2. Dashboard
+3. Orders
+4. Earnings
+5. Subscription Manager
+6. Storefront Share Page
+7. Settings
+8. Mobile Responsive Version
+
+⸻
+
+25. Exact Prompt For Replit
+
+Build a premium Tesla-inspired mobile-first SaaS dashboard for More Health China influencers. Use React with modern animations. Left sidebar desktop layout, hamburger mobile. Include dashboard KPIs, orders, subscriptions, earnings statements, wallet redirect, storefront sharing, reports, settings, and network queue tools. Must feel like Stripe + Tesla + Apple. Chinese localization ready.
+
+⸻
+
+26. Final Strategic Advice
+
+This cannot feel like MLM software.
+
+If it feels like old MLM back office, project fails.
+
+If it feels like creator fintech business OS, project wins.
+
+⸻
+
+27. My Recommendation
+
+Call it:
+
+More Health Partner OS
+
+or
+
+More Health Growth Hub
+
+or
+
+More Health Creator Console
+
+Best option:
+
+More Health Growth Hub

@@ -1,0 +1,38 @@
+I have an app that serves as a dashboard I want to use this same login for it since we want to share accounts between shopify and the dashboard.
+
+You can find it on morehealth.app
+
+
+
+
+8 steps
+8 steps
+Good news: yes, this is very doable, and the identity provider is set up exactly the way you'd want for sharing accounts across multiple apps. Here's what I found and how to wire it up.
+
+The login page Shopify redirects to is a standard OpenID Connect (OIDC) provider running on Oracle ORDS at dev.mh.kwik.dev. I pulled its discovery document, which confirms the full set of endpoints and capabilities:
+
+Issuer: https://dev.mh.kwik.dev/ords/oidc_provider/oidc
+Authorization endpoint: /oidc/authorize
+Token endpoint: /oidc/token
+Userinfo endpoint: /oidc/userinfo
+JWKS: /oidc/.well-known/jwks.json
+Supported flow: authorization_code (also refresh_token and client_credentials)
+Scopes: openid, profile, email, offline_access
+PKCE: supported (S256), signing is RS256, client auth via client_secret_post
+Because it's a real OIDC provider, your dashboard doesn't need anything Shopify-specific — Shopify is just one client of this provider, and your dashboard can be another client of the same provider. Both apps authenticating against the same issuer is precisely what lets you "share accounts."
+
+Right now morehealth.app/sign-in uses its own auth (Google, WeChat, email/password). To switch it to the shared identity provider, the integration is the standard Authorization Code + PKCE flow:
+
+First, the dashboard needs to be registered as an OIDC client on the provider, which produces a client_id (and client_secret), and you register the dashboard's redirect URI (e.g. https://morehealth.app/auth/callback) on the allow-list. This registration happens on the provider's admin side (the ORDS/APEX OAuth client config) — I can't do that part for you since it requires authenticated admin access, and creating/registering credentials is something you'll need to do yourself.
+
+Then, in the dashboard, a "Sign in" click redirects the user to /oidc/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=...&scope=openid profile email&state=...&code_challenge=...&code_challenge_method=S256. The provider shows the same MoreHealth login screen, the user authenticates, and it redirects back to your callback with an authorization code. Your dashboard backend exchanges that code at /oidc/token for an ID token + access token, validates the ID token against the JWKS, and reads the user's identity from the userinfo endpoint. Since both Shopify and the dashboard resolve users against the same issuer and sub (subject) identifier, it's genuinely one shared account.
+
+A few practical notes. The client_secret must live only on your dashboard's server side, never in front-end code. You'll want offline_access in scope if the dashboard needs refresh tokens for long-lived sessions. And importantly, everything you're looking at is on the dev. subdomain with demo users printed on the login page — that's a development environment, so for production you'll point at the production issuer URL and register a production client with production redirect URIs.
+
+Most web frameworks have a drop-in OIDC library (e.g. openid-client for Node, Authlib for Python, NextAuth's generic OIDC provider) where you just plug in the issuer URL, client_id, client_secret, and redirect URI and it handles the rest using the discovery document I found.
+
+Want me to dig deeper into anything specific — for example, trace the exact /authorize parameters Shopify's own client uses (to mirror its config), look for a client-registration endpoint on the provider, or sketch out the callback-handling code for whatever stack your dashboard is built on?
+
+
+
+

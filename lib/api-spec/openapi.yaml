@@ -1,0 +1,1314 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: profile
+    description: Influencer profile
+  - name: dashboard
+    description: Dashboard data
+  - name: orders
+    description: Orders
+  - name: addresses
+    description: Shipping addresses
+  - name: admin
+    description: Admin-only endpoints
+  - name: onboarding
+    description: Public onboarding helpers (no auth)
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get the authenticated user's influencer profile
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+    patch:
+      operationId: updateProfile
+      tags: [profile]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+  /share-links:
+    get:
+      operationId: getShareLinks
+      tags: [profile]
+      summary: Get share link URLs rendered with the user's sponsor_id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShareLinks"
+  /admin/share-links:
+    patch:
+      operationId: adminUpdateShareLinks
+      tags: [admin]
+      summary: Update the global share-link base URLs (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareLinksUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShareLinksConfig"
+  /display-flags:
+    get:
+      operationId: getDisplayFlags
+      tags: [profile]
+      summary: Get global display toggles (hide volume / hide influencer status)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DisplayFlags"
+  /admin/display-flags:
+    patch:
+      operationId: adminUpdateDisplayFlags
+      tags: [admin]
+      summary: Update global display toggles (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DisplayFlagsUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DisplayFlags"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get aggregated dashboard data for the authenticated user
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /storefront:
+    get:
+      operationId: getStorefront
+      tags: [dashboard]
+      summary: Get storefront stats for the authenticated user
+      parameters:
+        - in: query
+          name: from
+          required: false
+          schema: { type: string, format: date }
+          description: "Inclusive start date (YYYY-MM-DD, UTC). Defaults to start of current ISO week."
+        - in: query
+          name: to
+          required: false
+          schema: { type: string, format: date }
+          description: "Inclusive end date (YYYY-MM-DD, UTC). Defaults to end of current ISO week."
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Storefront"
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderItem"
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderDetail"
+  /referred-orders:
+    get:
+      operationId: listReferredOrders
+      tags: [orders]
+      summary: Orders attributed to this user as the referrer (frontline)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReferredOrderItem"
+  /downline/search:
+    get:
+      operationId: searchDownline
+      tags: [downline]
+      summary: Search the authenticated user's downline to order/enroll on behalf of a customer
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema: { type: string }
+          description: "Search term matched against name, email, or member ID. Empty returns the first members of the downline."
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DownlineMember"
+  /addresses:
+    get:
+      operationId: listAddresses
+      tags: [addresses]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AddressItem"
+    post:
+      operationId: createAddress
+      tags: [addresses]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddressInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressItem"
+  /addresses/{id}:
+    patch:
+      operationId: updateAddress
+      tags: [addresses]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddressInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressItem"
+    delete:
+      operationId: deleteAddress
+      tags: [addresses]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+  /placement:
+    get:
+      operationId: getPlacement
+      tags: [profile]
+      summary: MLM placement info (sponsor, influencer id, joined date)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Placement"
+  /admin/users:
+    get:
+      operationId: adminListUsers
+      tags: [admin]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+    post:
+      operationId: adminCreateUser
+      tags: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCreateUserRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+  /admin/users/{clerkUserId}:
+    patch:
+      operationId: adminUpdateUser
+      tags: [admin]
+      parameters:
+        - in: path
+          name: clerkUserId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUserUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+  /admin/users/{clerkUserId}/password:
+    post:
+      operationId: adminSetPassword
+      tags: [admin]
+      parameters:
+        - in: path
+          name: clerkUserId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSetPasswordRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOkResponse"
+  /admin/users/{clerkUserId}/email:
+    post:
+      operationId: adminChangeEmail
+      tags: [admin]
+      parameters:
+        - in: path
+          name: clerkUserId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminChangeEmailRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOkResponse"
+  /admin/users/transfer:
+    post:
+      operationId: adminTransferAccount
+      tags: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminTransferAccountRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTransferAccountResult"
+  /admin/orders:
+    get:
+      operationId: adminListOrders
+      tags: [admin]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminOrderItem"
+  /admin/orders/{id}:
+    get:
+      operationId: adminGetOrder
+      tags: [admin]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrderDetail"
+        "404": { description: Not found }
+  /admin/users/{clerkUserId}/detail:
+    get:
+      operationId: adminGetUserDetail
+      tags: [admin]
+      parameters:
+        - in: path
+          name: clerkUserId
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserDetail"
+        "404": { description: Not found }
+  /admin/integrations:
+    get:
+      operationId: adminGetIntegrations
+      tags: [admin]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegrationsStatus"
+  /admin/translations:
+    get:
+      operationId: adminGetTranslations
+      tags: [admin]
+      summary: Returns all translation overrides (both published and draft) keyed by English text.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTranslationsState"
+  /admin/translations/drafts:
+    put:
+      operationId: adminPutTranslationDrafts
+      tags: [admin]
+      summary: Replace the draft set wholesale with the provided map. Empty/missing keys clear their draft.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminPutTranslationDraftsRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTranslationsState"
+  /admin/translations/publish:
+    post:
+      operationId: adminPublishTranslations
+      tags: [admin]
+      summary: Promote all drafts to published. Drafts are then cleared.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTranslationsState"
+  /admin/translations/discard-drafts:
+    post:
+      operationId: adminDiscardTranslationDrafts
+      tags: [admin]
+      summary: Clear all draft overrides.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTranslationsState"
+  /translations:
+    get:
+      operationId: getPublishedTranslations
+      tags: [public]
+      summary: Public map of published Chinese translation overrides. Read by every client on load.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublishedTranslations"
+  /sms/send-code:
+    post:
+      operationId: smsSendCode
+      tags: [profile]
+      summary: Send an SMS verification code (MVP — dev mode returns code in response)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SmsSendCodeRequest"
+      responses:
+        "200":
+          description: Code sent (devMode=true and devCode present when no SMS provider configured)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmsSendCodeResult"
+        "429": { description: Cooldown active }
+  /sms/verify-code:
+    post:
+      operationId: smsVerifyCode
+      tags: [profile]
+      summary: Verify the SMS code sent to the user's phone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SmsVerifyCodeRequest"
+      responses:
+        "200":
+          description: Phone verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmsVerifyCodeResult"
+        "400": { description: Incorrect or expired code }
+        "429": { description: Too many attempts }
+  /onboarding/lookup-order:
+    post:
+      operationId: lookupOrderForSignup
+      tags: [onboarding]
+      summary: Look up a Shopify order to prefill the signup form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderLookupRequest"
+      responses:
+        "200":
+          description: Order found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderLookupResult"
+        "404": { description: Not found }
+        "409": { description: Already claimed by an existing account }
+  /signup/check-email:
+    post:
+      operationId: checkSignupEmail
+      tags: [onboarding]
+      summary: Check whether an email address already has an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckSignupEmailRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckSignupEmailResult"
+        "400": { description: Invalid email }
+  /onboarding/create-affiliate:
+    post:
+      operationId: createAffiliate
+      tags: [onboarding]
+      summary: Create the customer/affiliate record in the Kwik MLM backend during /activate signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AffiliateInput"
+      responses:
+        "200":
+          description: Affiliate created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AffiliateCreateResult"
+        "400": { description: Invalid input }
+        "403": { description: No matching order for this email }
+        "429": { description: Too many attempts }
+        "502": { description: Upstream Kwik API error }
+        "503": { description: Kwik API not configured }
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+    Profile:
+      type: object
+      required: [clerkUserId, influencerId, rank, walletBalanceCents, createdAt]
+      properties:
+        clerkUserId: { type: string }
+        influencerId: { type: string }
+        rank: { type: string }
+        firstName: { type: ["string", "null"] }
+        lastName: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        phoneVerified: { type: boolean }
+        dateOfBirth: { type: ["string", "null"], description: "ISO date YYYY-MM-DD" }
+        walletBalanceCents: { type: integer }
+        isAdmin: { type: boolean }
+        kwikApexId: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+    Placement:
+      type: object
+      required: [influencerId, rank, joinedAt]
+      properties:
+        influencerId: { type: string }
+        kwikApexId: { type: ["string", "null"] }
+        rank: { type: string }
+        joinedAt: { type: string, format: date-time }
+        sponsorId: { type: ["string", "null"] }
+        sponsor:
+          oneOf:
+            - type: "null"
+            - type: object
+              required: [clerkUserId, influencerId, rank]
+              properties:
+                clerkUserId: { type: string }
+                firstName: { type: ["string", "null"] }
+                lastName: { type: ["string", "null"] }
+                influencerId: { type: string }
+                rank: { type: string }
+                kwikApexId: { type: ["string", "null"] }
+    DownlineMember:
+      type: object
+      required: [clerkUserId]
+      properties:
+        clerkUserId: { type: string }
+        firstName: { type: ["string", "null"] }
+        lastName: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        kwikApexId: { type: ["string", "null"] }
+        shopOnBehalfUrl:
+          type: ["string", "null"]
+          description: "Shop page URL pre-filled to order on behalf of this customer (null if shop base URL not configured)."
+        enrollOnBehalfUrl:
+          type: ["string", "null"]
+          description: "Enrollment URL pre-filled to enroll on behalf of this customer (null if enroll base URL not configured)."
+    ShareLinks:
+      type: object
+      required:
+        [
+          shopBaseUrl,
+          enrollBaseUrl,
+          siteBaseUrl,
+          sponsorId,
+          shopShareUrl,
+          enrollShareUrl,
+          siteShareUrl,
+        ]
+      properties:
+        shopBaseUrl: { type: ["string", "null"] }
+        enrollBaseUrl: { type: ["string", "null"] }
+        siteBaseUrl: { type: ["string", "null"] }
+        sponsorId: { type: ["string", "null"] }
+        shopShareUrl: { type: ["string", "null"] }
+        enrollShareUrl: { type: ["string", "null"] }
+        siteShareUrl: { type: ["string", "null"] }
+    ShareLinksConfig:
+      type: object
+      required: [shopBaseUrl, enrollBaseUrl, siteBaseUrl]
+      properties:
+        shopBaseUrl: { type: ["string", "null"] }
+        enrollBaseUrl: { type: ["string", "null"] }
+        siteBaseUrl: { type: ["string", "null"] }
+    ShareLinksUpdate:
+      type: object
+      properties:
+        shopBaseUrl: { type: string }
+        enrollBaseUrl: { type: string }
+        siteBaseUrl: { type: string }
+    DisplayFlags:
+      type: object
+      required: [hideVolume, hideInfluencerStatus, hideEarnings]
+      properties:
+        hideVolume: { type: boolean }
+        hideInfluencerStatus: { type: boolean }
+        hideEarnings: { type: boolean }
+    DisplayFlagsUpdate:
+      type: object
+      properties:
+        hideVolume: { type: boolean }
+        hideInfluencerStatus: { type: boolean }
+        hideEarnings: { type: boolean }
+    ProfileUpdate:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string }
+        dateOfBirth: { type: ["string", "null"], description: "ISO date YYYY-MM-DD or null to clear" }
+    Kpi:
+      type: object
+      required: [value, deltaPct]
+      properties:
+        value: { type: number }
+        deltaPct: { type: ["number", "null"], description: "Null when no comparison data exists (e.g. new account)" }
+    DashboardKpis:
+      type: object
+      required: [totalOrders, referredOrders, volumeCents, commissionsCents]
+      properties:
+        totalOrders: { $ref: "#/components/schemas/Kpi" }
+        referredOrders: { $ref: "#/components/schemas/Kpi" }
+        volumeCents: { $ref: "#/components/schemas/Kpi" }
+        commissionsCents: { $ref: "#/components/schemas/Kpi" }
+    DashboardActivity:
+      type: object
+      required: [id, kind, description, occurredAt]
+      properties:
+        id: { type: integer }
+        kind: { type: string }
+        description: { type: string }
+        amountCents: { type: ["integer", "null"] }
+        occurredAt: { type: string, format: date-time }
+    DashboardSalesPoint:
+      type: object
+      required: [label, value]
+      properties:
+        label: { type: string }
+        value: { type: number }
+    DashboardVolume:
+      type: object
+      required: [totalCents, deltaPct, market1Cents, market2Cents]
+      properties:
+        totalCents: { type: integer, description: "CV + QV from personal and referred orders this week" }
+        deltaPct: { type: ["number", "null"] }
+        market1Cents: { type: integer, description: "Commissionable Volume (CV)" }
+        market2Cents: { type: integer, description: "Qualifying Volume (QV)" }
+    StorefrontProduct:
+      type: object
+      required: [name, units, revenueCents]
+      properties:
+        name: { type: string }
+        units: { type: integer }
+        revenueCents: { type: integer }
+    Storefront:
+      type: object
+      required:
+        - shopShareUrl
+        - rangeStart
+        - rangeEnd
+        - prevRangeStart
+        - prevRangeEnd
+        - orders
+        - revenueCents
+        - storeVisits
+        - conversionRate
+        - avgOrderValueCents
+        - mostOrdered
+      properties:
+        shopShareUrl: { type: ["string", "null"] }
+        rangeStart: { type: string, format: date-time }
+        rangeEnd: { type: string, format: date-time }
+        prevRangeStart: { type: string, format: date-time }
+        prevRangeEnd: { type: string, format: date-time }
+        orders: { $ref: "#/components/schemas/Kpi" }
+        revenueCents:
+          $ref: "#/components/schemas/Kpi"
+          description: "Sum of personal + referred order amounts this week"
+        storeVisits:
+          $ref: "#/components/schemas/Kpi"
+          description: "Count of storefront visits with this user's sponsor_ID"
+        conversionRate:
+          $ref: "#/components/schemas/Kpi"
+          description: "orders / storeVisits, as a percentage (e.g. 4.2 means 4.2%)"
+        avgOrderValueCents: { $ref: "#/components/schemas/Kpi" }
+        mostOrdered:
+          type: array
+          items: { $ref: "#/components/schemas/StorefrontProduct" }
+          description: "Top products by units sold across personal + referred orders"
+    Dashboard:
+      type: object
+      required:
+        - walletBalanceCents
+        - weeklyEarningsCents
+        - ordersThisWeek
+        - kpis
+        - salesByDay
+        - earningsHistory
+        - volume
+        - activity
+        - rangeStart
+        - rangeEnd
+      properties:
+        walletBalanceCents: { type: integer }
+        weeklyEarningsCents: { type: integer }
+        ordersThisWeek: { type: integer }
+        rangeStart: { type: string, format: date-time }
+        rangeEnd: { type: string, format: date-time }
+        kpis: { $ref: "#/components/schemas/DashboardKpis" }
+        salesByDay:
+          type: array
+          items: { $ref: "#/components/schemas/DashboardSalesPoint" }
+        earningsHistory:
+          type: array
+          items: { $ref: "#/components/schemas/DashboardSalesPoint" }
+        volume: { $ref: "#/components/schemas/DashboardVolume" }
+        activity:
+          type: array
+          items: { $ref: "#/components/schemas/DashboardActivity" }
+    OrderItem:
+      type: object
+      required: [id, customerName, productName, amountCents, status, occurredAt]
+      properties:
+        id: { type: integer }
+        orderName: { type: ["string", "null"] }
+        customerName: { type: string }
+        productName: { type: string }
+        amountCents: { type: integer }
+        cvCents: { type: ["integer", "null"] }
+        qvCents: { type: ["integer", "null"] }
+        status: { type: string }
+        occurredAt: { type: string, format: date-time }
+        lineItems:
+          type: array
+          items: { $ref: "#/components/schemas/OrderLineItemSchema" }
+    OrderDetail:
+      type: object
+      required:
+        [
+          id,
+          customerName,
+          productName,
+          amountCents,
+          commissionCents,
+          currency,
+          status,
+          source,
+          occurredAt,
+          lineItems,
+          discountCodes,
+        ]
+      properties:
+        id: { type: integer }
+        orderName: { type: ["string", "null"] }
+        customerName: { type: string }
+        customerEmail: { type: ["string", "null"] }
+        customerPhone: { type: ["string", "null"] }
+        productName: { type: string }
+        amountCents: { type: integer }
+        commissionCents: { type: integer }
+        currency: { type: string }
+        status: { type: string }
+        source: { type: string }
+        occurredAt: { type: string, format: date-time }
+        lineItems:
+          type: array
+          items: { $ref: "#/components/schemas/OrderLineItemSchema" }
+        discountCodes:
+          type: array
+          items: { $ref: "#/components/schemas/OrderDiscountCodeSchema" }
+        shippingAddress:
+          oneOf:
+            - $ref: "#/components/schemas/OrderShippingAddress"
+            - type: "null"
+        note: { type: ["string", "null"] }
+    ReferredOrderItem:
+      type: object
+      required:
+        [
+          id,
+          customerName,
+          productName,
+          amountCents,
+          currency,
+          status,
+          occurredAt,
+        ]
+      properties:
+        id: { type: integer }
+        orderName: { type: ["string", "null"] }
+        customerName: { type: string }
+        productName: { type: string }
+        amountCents: { type: integer }
+        cvCents: { type: ["integer", "null"] }
+        qvCents: { type: ["integer", "null"] }
+        currency: { type: string }
+        status: { type: string }
+        sponsorId: { type: ["string", "null"] }
+        occurredAt: { type: string, format: date-time }
+        lineItems:
+          type: array
+          items: { $ref: "#/components/schemas/OrderLineItemSchema" }
+    AddressItem:
+      type: object
+      required: [id, label, recipient, line1, city, region, postalCode, country, isDefault]
+      properties:
+        id: { type: integer }
+        label: { type: string }
+        recipient: { type: string }
+        line1: { type: string }
+        line2: { type: ["string", "null"] }
+        city: { type: string }
+        region: { type: string }
+        postalCode: { type: string }
+        country: { type: string }
+        isDefault: { type: boolean }
+    AdminUser:
+      type: object
+      required: [clerkUserId, influencerId, rank, walletBalanceCents, isAdmin, accountStatus, ordersCount, createdAt]
+      properties:
+        clerkUserId: { type: string }
+        influencerId: { type: string }
+        rank: { type: string }
+        firstName: { type: ["string", "null"] }
+        lastName: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        walletBalanceCents: { type: integer }
+        isAdmin: { type: boolean }
+        byDesignUserId: { type: ["string", "null"] }
+        netfiWalletId: { type: ["string", "null"] }
+        kwikApexId: { type: ["string", "null"] }
+        shopifyCustomerId: { type: ["string", "null"] }
+        shopifyAdminCustomerUrl: { type: ["string", "null"] }
+        accountStatus:
+          type: string
+          description: 'Account lifecycle state, e.g. "active" or "pending" (a password-less placeholder created from a Shopify order).'
+        sponsorClerkUserId: { type: ["string", "null"] }
+        sponsorIdRaw: { type: ["string", "null"] }
+        sponsorName: { type: ["string", "null"] }
+        ordersCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+    AdminCreateUserRequest:
+      type: object
+      required: [email]
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        rank: { type: string }
+        sponsorClerkUserId:
+          type: ["string", "null"]
+          description: Clerk user id of the sponsor (upline) for this new member, if any.
+    AdminUserUpdate:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string }
+        rank: { type: string }
+        walletBalanceCents: { type: integer }
+        isAdmin: { type: boolean }
+        byDesignUserId: { type: ["string", "null"] }
+        netfiWalletId: { type: ["string", "null"] }
+        kwikApexId: { type: ["string", "null"] }
+        shopifyCustomerId: { type: ["string", "null"] }
+        sponsorClerkUserId: { type: ["string", "null"] }
+    AdminSetPasswordRequest:
+      type: object
+      required: [password]
+      properties:
+        password: { type: string, minLength: 8 }
+    AdminChangeEmailRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email }
+    AdminTransferAccountRequest:
+      type: object
+      required: [sourceClerkUserId, targetClerkUserId]
+      properties:
+        sourceClerkUserId: { type: string }
+        targetClerkUserId: { type: string }
+        deleteSource: { type: boolean, default: false }
+        mergeWallet: { type: boolean, default: true }
+    AdminTransferAccountResult:
+      type: object
+      required: [ordersMoved, walletMovedCents, sourceDbDeleted, sourceClerkDeleted]
+      properties:
+        ordersMoved: { type: integer }
+        walletMovedCents: { type: integer }
+        sourceDbDeleted: { type: boolean }
+        sourceClerkDeleted: { type: boolean }
+        sourceClerkDeleteError: { type: ["string", "null"] }
+    AdminOkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+    AdminOrderItem:
+      type: object
+      required: [id, customerName, productName, amountCents, commissionCents, currency, status, source, occurredAt]
+      properties:
+        id: { type: integer }
+        clerkUserId: { type: ["string", "null"] }
+        mappedUserName: { type: ["string", "null"] }
+        mappedInfluencerId: { type: ["string", "null"] }
+        mappedAccountStatus:
+          type: ["string", "null"]
+          enum: [active, pending, null]
+          description: "Status of the user this order is mapped to. 'pending' means the user was auto-created from this order and has not activated yet."
+        customerName: { type: string }
+        customerEmail: { type: ["string", "null"] }
+        productName: { type: string }
+        orderName: { type: ["string", "null"] }
+        amountCents: { type: integer }
+        commissionCents: { type: integer }
+        currency: { type: string }
+        status: { type: string }
+        source: { type: string }
+        shopifyOrderId: { type: ["string", "null"] }
+        shopifyAdminOrderUrl: { type: ["string", "null"] }
+        occurredAt: { type: string, format: date-time }
+    OrderLineItemSchema:
+      type: object
+      required: [title, quantity, priceCents]
+      properties:
+        title: { type: string }
+        variantTitle: { type: ["string", "null"] }
+        sku: { type: ["string", "null"] }
+        quantity: { type: integer }
+        priceCents: { type: integer }
+        productId: { type: ["string", "null"] }
+        variantId: { type: ["string", "null"] }
+    OrderDiscountCodeSchema:
+      type: object
+      required: [code, amountCents]
+      properties:
+        code: { type: string }
+        amountCents: { type: integer }
+        type: { type: ["string", "null"] }
+    OrderNoteAttributeSchema:
+      type: object
+      required: [name, value]
+      properties:
+        name: { type: string }
+        value: { type: string }
+    OrderShippingAddress:
+      type: object
+      properties:
+        firstName: { type: ["string", "null"] }
+        lastName: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        line1: { type: ["string", "null"] }
+        line2: { type: ["string", "null"] }
+        city: { type: ["string", "null"] }
+        region: { type: ["string", "null"] }
+        postalCode: { type: ["string", "null"] }
+        country: { type: ["string", "null"] }
+        countryCode: { type: ["string", "null"] }
+    AdminOrderDetail:
+      type: object
+      required: [id, customerName, productName, amountCents, commissionCents, currency, status, source, occurredAt, tags, discountCodes, noteAttributes, lineItems, createdAt]
+      properties:
+        id: { type: integer }
+        clerkUserId: { type: ["string", "null"] }
+        mappedUserName: { type: ["string", "null"] }
+        mappedInfluencerId: { type: ["string", "null"] }
+        mappedAccountStatus:
+          type: ["string", "null"]
+          enum: [active, pending, null]
+        mappedSponsor:
+          description: Sponsor (referrer) of the user this order is mapped to.
+          oneOf:
+            - type: object
+              required: [clerkUserId, name, influencerId]
+              properties:
+                clerkUserId: { type: string }
+                name: { type: ["string", "null"] }
+                influencerId: { type: ["string", "null"] }
+            - type: "null"
+        customerName: { type: string }
+        customerEmail: { type: ["string", "null"] }
+        customerPhone: { type: ["string", "null"] }
+        productName: { type: string }
+        orderName: { type: ["string", "null"] }
+        amountCents: { type: integer }
+        commissionCents: { type: integer }
+        currency: { type: string }
+        status: { type: string }
+        source: { type: string }
+        shopifyOrderId: { type: ["string", "null"] }
+        shopifyAdminOrderUrl: { type: ["string", "null"] }
+        occurredAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        note: { type: ["string", "null"] }
+        tags:
+          type: array
+          items: { type: string }
+        discountCodes:
+          type: array
+          items: { $ref: "#/components/schemas/OrderDiscountCodeSchema" }
+        noteAttributes:
+          type: array
+          items: { $ref: "#/components/schemas/OrderNoteAttributeSchema" }
+        lineItems:
+          type: array
+          items: { $ref: "#/components/schemas/OrderLineItemSchema" }
+        shippingAddress:
+          oneOf:
+            - $ref: "#/components/schemas/OrderShippingAddress"
+            - type: "null"
+        rawPayload:
+          description: Raw Shopify webhook payload (admin only)
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: "null"
+    AdminUserDetail:
+      type: object
+      required: [profile, orders, totalSpendCents, totalCommissionCents]
+      properties:
+        profile:
+          $ref: "#/components/schemas/AdminUser"
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminOrderItem"
+        totalSpendCents: { type: integer }
+        totalCommissionCents: { type: integer }
+    PublishedTranslations:
+      type: object
+      required: [translations]
+      properties:
+        translations:
+          type: object
+          additionalProperties: { type: string }
+          description: Map of English text -> published Chinese override.
+    AdminTranslationsState:
+      type: object
+      required: [published, drafts]
+      properties:
+        published:
+          type: object
+          additionalProperties: { type: string }
+        drafts:
+          type: object
+          additionalProperties: { type: string }
+    AdminPutTranslationDraftsRequest:
+      type: object
+      required: [drafts]
+      properties:
+        drafts:
+          type: object
+          additionalProperties: { type: string }
+          description: Full draft set. Keys not present are cleared.
+    IntegrationsStatus:
+      type: object
+      required: [shopify, stats]
+      properties:
+        shopify:
+          type: object
+          required: [webhookUrl]
+          properties:
+            webhookUrl: { type: string }
+        stats:
+          type: object
+          required: [totalOrders, mappedOrders, unmappedOrders, shopifyOrders]
+          properties:
+            totalOrders: { type: integer }
+            mappedOrders: { type: integer }
+            unmappedOrders: { type: integer }
+            shopifyOrders: { type: integer }
+    SmsSendCodeRequest:
+      type: object
+      required: [phone]
+      properties:
+        phone: { type: string }
+    SmsSendCodeResult:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+        devMode: { type: boolean }
+        devCode: { type: string }
+    SmsVerifyCodeRequest:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string }
+    SmsVerifyCodeResult:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+        phone: { type: string }
+    OrderLookupRequest:
+      type: object
+      description: >-
+        Provide at least one identifier. An order number or the email used at
+        checkout is sufficient; supplying both narrows the match.
+      properties:
+        orderName:
+          type: string
+          description: Shopify order number (e.g. "#1001") or order id.
+        email:
+          type: string
+          description: Email address used at checkout.
+    CheckSignupEmailRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string }
+    CheckSignupEmailResult:
+      type: object
+      required: [exists]
+      properties:
+        exists: { type: boolean }
+    OrderLookupShipping:
+      type: object
+      properties:
+        line1: { type: ["string", "null"] }
+        line2: { type: ["string", "null"] }
+        city: { type: ["string", "null"] }
+        region: { type: ["string", "null"] }
+        postalCode: { type: ["string", "null"] }
+        country: { type: ["string", "null"] }
+        countryCode: { type: ["string", "null"] }
+    OrderLookupResult:
+      type: object
+      required: [orderName]
+      properties:
+        orderName: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        firstName: { type: ["string", "null"] }
+        lastName: { type: ["string", "null"] }
+        shippingAddress:
+          oneOf:
+            - $ref: "#/components/schemas/OrderLookupShipping"
+            - type: "null"
+    AffiliateInput:
+      type: object
+      description: >-
+        Customer/affiliate creation payload sent from the /activate signup form.
+        The server exchanges OAuth credentials and forwards this to the Kwik
+        MLM backend (mapping camelCase fields to Kwik's snake_case body).
+      required: [email, password]
+      properties:
+        email: { type: string }
+        password: { type: string }
+        givenName: { type: ["string", "null"] }
+        familyName: { type: ["string", "null"] }
+        phoneNumber: { type: ["string", "null"] }
+        acceptsMarketing:
+          type: boolean
+          description: Defaults to true when omitted.
+    AffiliateCreateResult:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+    AddressInput:
+      type: object
+      required: [label, recipient, line1, city, region, postalCode]
+      properties:
+        label: { type: string }
+        recipient: { type: string }
+        line1: { type: string }
+        line2: { type: string }
+        city: { type: string }
+        region: { type: string }
+        postalCode: { type: string }
+        country: { type: string }
+        isDefault: { type: boolean }

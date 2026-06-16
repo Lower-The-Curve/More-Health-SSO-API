@@ -1,0 +1,130 @@
+openapi: "3.0.3"
+
+info:
+  title: MoreHealth Dashboard API
+  version: "1.0.0"
+  description: >
+    Backend API powering the MoreHealth distributor dashboard.
+    All endpoints require a valid session unless marked public.
+
+servers:
+  - url: https://api.morehealth.com/v1
+    description: Production
+
+tags:
+  - name: auth
+    description: Authentication and session management (OIDC/BFF)
+  - name: profile
+    description: Authenticated user's own profile and account settings
+  - name: onboarding
+    description: New-member onboarding flow
+  - name: signup
+    description: Distributor registration
+  - name: orders
+    description: Personal order history and order details
+  - name: referredOrders
+    description: Orders placed through the authenticated distributor's referral link
+  - name: downline
+    description: Downline network and team structure
+  - name: sponsors
+    description: Sponsor lookup and sponsor tree
+  - name: storefront
+    description: Distributor-specific storefront configuration
+  - name: addresses
+    description: Shipping and billing address management
+  - name: sms
+    description: SMS notification preferences and opt-in/out
+  - name: translations
+    description: Localisation strings
+  - name: appSettings
+    description: Application-wide feature flags and configuration
+  - name: dashboard
+    description: Dashboard summary and KPI data
+  - name: admin
+    description: Admin-only operations (requires admin role)
+  - name: webhooks
+    description: Inbound webhooks from third-party integrations
+  - name: health
+    description: Service health and readiness probes
+
+paths: {}
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: HTTP-only session cookie set by the BFF auth flow
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        message:
+          type: string
+          description: Human-readable error summary
+          example: "Validation failed"
+        details:
+          type: array
+          description: Optional field-level validation errors
+          items:
+            type: object
+            required:
+              - field
+              - message
+            properties:
+              field:
+                type: string
+                example: "email"
+              message:
+                type: string
+                example: "must be a valid email address"
+
+  responses:
+    BadRequest:
+      description: Malformed request or failed input validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Missing or expired session
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Authenticated but insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    UnprocessableEntity:
+      description: Semantic validation error (structurally valid but business-rule violation)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+security:
+  - sessionCookie: []

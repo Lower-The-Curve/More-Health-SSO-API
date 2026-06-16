@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "More Health"
+version = "1.0.0"
+id = "artifacts/more-health"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24161
+
+[services.development]
+run = "pnpm --filter @workspace/more-health run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/more-health", "run", "build" ]
+publicDir = "artifacts/more-health/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24161"
+BASE_PATH = "/"

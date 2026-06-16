@@ -1,0 +1,235 @@
+1. Overview
+
+Create a Post-Purchase Signup Page that appears immediately after a successful enrollment purchase / starter kit checkout.
+
+Purpose:
+
+Convert a completed Shopify buyer into an activated dashboard user with minimal friction.
+
+The user has already purchased and submitted their information during checkout, so this page should feel like a quick account activation, not another form.
+
+⸻
+
+2. User Journey
+
+Trigger Event
+
+After successful enrollment order in Shopify:
+
+* Customer completes checkout
+* Order tagged as enrollment / partner signup
+* Redirect user to:
+
+/activate-account
+
+⸻
+
+Goal
+
+User only needs to:
+
+1. Review imported information
+2. See verified contact confirmations
+3. Create password
+4. Submit
+5. Enter dashboard automatically
+
+⸻
+
+3. UX Direction
+
+Design Style
+
+* Premium modern onboarding flow
+* Apple / Tesla simplicity
+* White space
+* Fast and clean
+* High-trust visuals
+
+Emotional Feel
+
+“You’re in. Let’s finish setting up your business.”
+
+⸻
+
+4. Data Pulled From Shopify Order
+
+Auto-populate all available customer/order data from Shopify.
+
+Required Fields Imported
+
+Personal Info
+
+* First Name
+* Last Name
+* Full Name
+* Email Address
+* Phone Number
+
+Shipping Info
+
+* Address Line 1
+* Address Line 2
+* City
+* State / Province
+* Postal Code
+* Country
+
+Order Metadata
+
+* Shopify Customer ID
+* Shopify Order ID
+* Enrollment SKU purchased
+* Sponsor / Referrer ID
+* Timestamp
+
+⸻
+
+5. Page Layout
+
+Header
+
+Welcome to More Health
+
+Subtext:
+
+Your enrollment is complete. Let’s activate your account.
+
+⸻
+
+Section 1: Verified Information
+
+Display imported info in read-only or editable cards.
+
+Example:
+
+Name
+Brad Cooper
+
+Email
+brad@email.com ✅ Successfully Confirmed
+
+Phone
++86 xxx xxxx xxxx ✅ Successfully Confirmed
+
+Shipping Address
+123 Main Street, Shanghai
+
+⸻
+
+Section 2: Create Password
+
+Fields:
+
+* Password
+* Confirm Password
+
+Rules
+
+* Minimum 8 characters
+* 1 uppercase recommended
+* 1 number recommended
+
+Live password strength indicator.
+
+⸻
+
+Section 3: CTA
+
+Primary Button:
+
+Create My Account
+
+⸻
+
+6. Success Flow
+
+After successful password creation:
+
+System Actions
+
+1. Create user account in dashboard auth system
+2. Link account to Shopify Customer ID
+3. Link enrollment order
+4. Sync sponsor/referral relationship
+5. Mark account activated
+6. Auto-login user
+7. Redirect to dashboard home
+
+⸻
+
+7. Dashboard Redirect
+
+Send user to:
+
+/dashboard
+
+With welcome modal:
+
+Welcome Modal
+
+Welcome to More Health Growth Hub.
+
+Your account is ready.
+
+Buttons:
+
+* Go to Dashboard
+* View My Storefront
+* Shop Products
+
+⸻
+
+8. Validation Rules
+
+Password Errors
+
+* Passwords do not match
+* Password too weak
+* Missing fields
+
+Security
+
+* Activation token expires after X hours
+* One-time use activation link
+* Rate limited submissions
+
+⸻
+
+9. Edge Cases
+
+Existing Account Found
+
+If email already activated:
+
+Show:
+
+Your account already exists.
+
+Buttons:
+
+* Login
+* Reset Password
+
+⸻
+
+Missing Shopify Data
+
+Fallback editable fields shown.
+
+⸻
+
+Duplicate Activation Attempt
+
+Show already completed message.
+
+⸻
+
+10. Mobile UX Requirements
+
+This flow should be optimized for mobile first.
+
+* Large fields
+* Thumb-friendly button
+* Autofill enabled
+* Fast load speed

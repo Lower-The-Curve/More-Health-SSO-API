@@ -1,0 +1,17 @@
+{
+  "method": "POST",
+  "url": "https://morehealth.app/api/webhooks/shopify/orders",
+  "headers": [
+    [
+      "Content-Type",
+      "application/json"
+    ],
+    [
+      "x-shopify-maestro-reqid",
+      "019e6ab7-aa64-75be-bfda-31e8d7c72e88"
+    ]
+  ],
+  "body": "{\n  \"event\": \"order_created\",\n  \"order_id\": \"gid://shopify/Order/6984993013947\",\n  \"order_name\": \"#1040\",\n  \"order_number\": 1040,\n  \"created_at\": \"2026-05-27T18:34:36Z\",\n  \"email\": \"brady+999@kwik.com\",\n  \"phone\": \"\",\n  \"note\": \"\",\n  \"tags\": [],\n  \"customer\": {\n    \"id\": \"gid://shopify/Customer/9545140043963\",\n    \"email\": \"brady+999@kwik.com\",\n    \"first_name\": \"\",\n    \"last_name\": \"Cooper\",\n    \"display_name\": \"Cooper\",\n    \"phone\": \"\",\n    \"tags\": [\"influencer\"]\n  },\n  \"financial_status\": \"PAID\",\n  \"fulfillment_status\": \"UNFULFILLED\",\n  \"discount_code\": \"\",\n  \"pricing\": {\n    \"subtotal\": 8130.0,\n    \"total_price\": 8365.08,\n    \"current_total_price\": 8365.08,\n    \"total_tax\": 0.0,\n    \"total_shipping\": 235.08,\n    \"total_discounts\": \"\",\n    \"currency\": \"HKD\",\n    \"taxes_included\": false\n  },\n  \"shipping_address\": {\n    \"name\": \"Cooper\",\n    \"first_name\": \"\",\n    \"last_name\": \"Cooper\",\n    \"company\": \"\",\n    \"address1\": \"123 Cheung Sha Wan Road\",\n    \"address2\": \"\",\n    \"city\": \"Cheung Sha Wan\",\n    \"province\": \"Kowloon\",\n    \"country\": \"Hong Kong\",\n    \"zip\": \"\",\n    \"phone\": \"\"\n  },\n  \"billing_address\": {\n    \"name\": \"Cooper\",\n    \"first_name\": \"\",\n    \"last_name\": \"Cooper\",\n    \"company\": \"\",\n    \"address1\": \"123 Cheung Sha Wan Road\",\n    \"address2\": \"\",\n    \"city\": \"Cheung Sha Wan\",\n    \"province\": \"Kowloon\",\n    \"country\": \"Hong Kong\",\n    \"zip\": \"\",\n    \"phone\": \"\"\n  },\n  \"line_items\": [{\n      \"id\": \"gid://shopify/LineItem/16233365962939\",\n      \"title\": \"SomaDerm  SomaNight: 3 Months\",\n      \"quantity\": 1,\n      \"price\": 8130.0,\n      \"sku\": \"10746\",\n      \"variant_id\": \"gid://shopify/ProductVariant/47555461513403\",\n      \"variant_title\": \"Default Title\",\n      \"product_id\": \"gid://shopify/Product/8347485405371\",\n      \"product_title\": \"SomaDerm  SomaNight: 3 Months\",\n      \"product_type\": \"\",\n      \"vendor\": \"MOREHEALTH\",\n      \"requires_shipping\": true\n    }],\n  \"metafields\": [\n    { \"namespace\": \"apex\",    \"key\": \"qualifying_volume\", \"value\": \"59\" },\n    { \"namespace\": \"apex\",    \"key\": \"commission_volume\", \"value\": \"40\" },\n    { \"namespace\": \"uwallet\", \"key\": \"order_reference\",   \"value\": \"\" },\n    { \"namespace\": \"apex\",    \"key\": \"apex_user_id\",      \"value\": \"\" },\n    { \"namespace\": \"apex\",    \"key\": \"rep_id\",            \"value\": \"\" }\n  ]\n}",
+  "on_client_error": "retry",
+  "on_server_error": "retry"
+}

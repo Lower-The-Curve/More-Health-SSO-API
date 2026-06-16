@@ -1,0 +1,226 @@
+{
+  "info": {
+    "_postman_id": "d4d0d639-0331-4e27-82cf-d40977def82e",
+    "name": "Shopify APP ORDS module",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "1205526"
+  },
+  "item": [
+    {
+      "name": "get user info",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://dev.mh.kwik.dev/ords/mh/cce/affiliate/:id",
+          "protocol": "https",
+          "host": [
+            "dev",
+            "mh",
+            "kwik",
+            "dev"
+          ],
+          "path": [
+            "ords",
+            "mh",
+            "cce",
+            "affiliate",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "4"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "create account",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"mwingle+catest1@gmail.com\",\r\n    \"password\": \"testing123\",\r\n    \"given_name\": \"Matt\",\r\n    \"family_name\": \"Wingle\",\r\n    \"email_verified\": \"Y\",\r\n    \"phone_number\": \"+18012439615\",\r\n    \"accepts_marketing\": \"Y\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://dev.mh.kwik.dev/ords/mh/cce/affiliate",
+          "protocol": "https",
+          "host": [
+            "dev",
+            "mh",
+            "kwik",
+            "dev"
+          ],
+          "path": [
+            "ords",
+            "mh",
+            "cce",
+            "affiliate"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "create account",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"mwingle+catest1@gmail.com\",\r\n    \"password\": \"testing123\",\r\n    \"given_name\": \"Matt\",\r\n    \"family_name\": \"Wingle\",\r\n    \"email_verified\": \"Y\",\r\n    \"phone_number\": \"+18012439615\",\r\n    \"accepts_marketing\": \"Y\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.mh.kwik.dev/ords/mh/cce/affiliate",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "mh",
+                "kwik",
+                "dev"
+              ],
+              "path": [
+                "ords",
+                "mh",
+                "cce",
+                "affiliate"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Date",
+              "value": "Sun, 07 Jun 2026 02:50:28 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "text/html;charset=utf-8"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000;includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Request-Id",
+              "value": "384caa0be959e3183baf3498338728b7"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"user_id\" : 5,\n  \"email\" : \"mwingle+catest1@gmail.com\",\n  \"given_name\" : \"Matt\",\n  \"family_name\" : \"Wingle\",\n  \"email_verified\" : \"Y\",\n  \"phone_number\" : \"+18012439615\",\n  \"accepts_marketing\" : \"Y\"\n}\n"
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "oauth2",
+    "oauth2": [
+      {
+        "key": "accessTokenUrl",
+        "value": "https://dev.mh.kwik.dev/ords/mh/oauth/token",
+        "type": "string"
+      },
+      {
+        "key": "clientSecret",
+        "value": "{{vault:mh-shopify-client-secret}}",
+        "type": "string"
+      },
+      {
+        "key": "clientId",
+        "value": "{{vault:mh-shopify-client-id}}",
+        "type": "string"
+      },
+      {
+        "key": "tokenName",
+        "value": "mh shopify dev",
+        "type": "string"
+      },
+      {
+        "key": "refreshRequestParams",
+        "value": [],
+        "type": "any"
+      },
+      {
+        "key": "tokenRequestParams",
+        "value": [],
+        "type": "any"
+      },
+      {
+        "key": "authRequestParams",
+        "value": [],
+        "type": "any"
+      },
+      {
+        "key": "challengeAlgorithm",
+        "value": "S256",
+        "type": "string"
+      },
+      {
+        "key": "grant_type",
+        "value": "client_credentials",
+        "type": "string"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      },
+      {
+        "key": "client_authentication",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

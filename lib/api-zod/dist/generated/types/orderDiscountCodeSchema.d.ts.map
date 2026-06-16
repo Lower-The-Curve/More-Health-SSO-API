@@ -1,0 +1,1 @@
+{"version":3,"file":"orderDiscountCodeSchema.d.ts","sourceRoot":"","sources":["../../../src/generated/types/orderDiscountCodeSchema.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AAEH,MAAM,WAAW,uBAAuB;IACtC,IAAI,EAAE,MAAM,CAAC;IACb,WAAW,EAAE,MAAM,CAAC;IACpB,gBAAgB;IAChB,IAAI,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;CACtB"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"adminTransferAccountResult.d.ts","sourceRoot":"","sources":["../../../src/generated/types/adminTransferAccountResult.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AAEH,MAAM,WAAW,0BAA0B;IACzC,WAAW,EAAE,MAAM,CAAC;IACpB,gBAAgB,EAAE,MAAM,CAAC;IACzB,eAAe,EAAE,OAAO,CAAC;IACzB,kBAAkB,EAAE,OAAO,CAAC;IAC5B,gBAAgB;IAChB,sBAAsB,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;CACxC"}

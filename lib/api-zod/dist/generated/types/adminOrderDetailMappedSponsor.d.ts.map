@@ -1,0 +1,1 @@
+{"version":3,"file":"adminOrderDetailMappedSponsor.d.ts","sourceRoot":"","sources":["../../../src/generated/types/adminOrderDetailMappedSponsor.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AAEH;;GAEG;AACH,MAAM,MAAM,6BAA6B,GAAG;IAC1C,WAAW,EAAE,MAAM,CAAC;IACpB,gBAAgB;IAChB,IAAI,EAAE,MAAM,GAAG,IAAI,CAAC;IACpB,gBAAgB;IAChB,YAAY,EAAE,MAAM,GAAG,IAAI,CAAC;CAC7B,GAAG,IAAI,CAAC"}
