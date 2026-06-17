@@ -47,7 +47,312 @@ tags:
   - name: health
     description: Service health and readiness probes
 
-paths: {}
+paths:
+
+  /auth/login:
+    get:
+      tags: [auth]
+      operationId: initiateLogin
+      summary: Initiate OIDC login
+      description: >
+        Redirects the browser to the configured identity provider to begin
+        the OIDC authorisation code flow. No session is required.
+      security: []
+      responses:
+        "302":
+          description: Redirect to identity provider
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: OIDC authorisation endpoint URL with state and nonce
+
+  /auth/callback:
+    get:
+      tags: [auth]
+      operationId: oidcCallback
+      summary: OIDC callback
+      description: >
+        Receives the authorisation code and state from the identity provider,
+        exchanges them for tokens, creates a server-side session, and sets the
+        HTTP-only session cookie before redirecting to the dashboard.
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorisation code returned by the identity provider
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: CSRF state value generated during login initiation
+      responses:
+        "302":
+          description: Login successful — redirects to dashboard
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: Post-login redirect URL (e.g. /dashboard)
+            Set-Cookie:
+              schema:
+                type: string
+              description: HTTP-only session cookie
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: End session
+      description: >
+        Invalidates the server-side session and clears the session cookie.
+        Requires an active session.
+      responses:
+        "200":
+          description: Session cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /profile:
+    get:
+      tags: [profile]
+      operationId: getProfile
+      summary: Get own profile
+      description: >
+        Returns the authenticated distributor's own profile. The profile is
+        created automatically on first access if it does not yet exist.
+        Internal integration IDs (ByDesign, NetFi, Shopify) are excluded.
+      responses:
+        "200":
+          description: Authenticated user's profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /dashboard:
+    get:
+      tags: [dashboard]
+      operationId: getDashboard
+      summary: Get dashboard summary
+      description: >
+        Returns the authenticated distributor's weekly KPIs, daily sales chart,
+        four-week earnings history, volume breakdown, and recent activity feed.
+        All monetary values are in cents except salesByDay and earningsHistory,
+        which are in dollars.
+      responses:
+        "200":
+          description: Dashboard data for the current week
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /orders:
+    get:
+      tags: [orders]
+      operationId: getOrders
+      summary: List personal orders
+      description: >
+        Returns a paginated list of the authenticated distributor's own orders,
+        sorted newest first.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number to retrieve (1-indexed)
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Maximum number of orders per page
+      responses:
+        "200":
+          description: Paginated list of personal orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /orders/{id}:
+    get:
+      tags: [orders]
+      operationId: getOrder
+      summary: Get order detail
+      description: >
+        Returns full detail for one of the authenticated distributor's own orders.
+        Scoped to the caller — users cannot fetch other users' orders by guessing IDs.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Internal order ID
+      responses:
+        "200":
+          description: Full order detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /referred-orders:
+    get:
+      tags: [referredOrders]
+      operationId: getReferredOrders
+      summary: List referred orders
+      description: >
+        Returns a paginated list of orders placed through the authenticated
+        distributor's referral link, sorted newest first. Each item extends
+        the base Order shape with currency and sponsorId fields.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number to retrieve (1-indexed)
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Maximum number of orders per page
+      responses:
+        "200":
+          description: Paginated list of referred orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferredOrdersPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /sms/send-code:
+    post:
+      tags: [sms]
+      operationId: sendSmsCode
+      summary: Send SMS verification code
+      description: >
+        Generates a 6-digit verification code and sends it to the provided
+        phone number via SMS. In dev mode (no SMS provider configured) the
+        code is returned in the response body instead. A 30-second cooldown
+        is enforced between requests per user; the Retry-After header indicates
+        the remaining wait in seconds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+              properties:
+                phone:
+                  type: string
+                  description: Phone number to send the verification code to
+                  example: "+14155550123"
+      responses:
+        "200":
+          description: Code sent (or returned in dev mode)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmsSendCodeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /sms/verify-code:
+    post:
+      tags: [sms]
+      operationId: verifySmsCode
+      summary: Verify SMS code
+      description: >
+        Validates the submitted 6-digit code against the pending verification
+        record. On success, writes the phone number and sets phoneVerified = true
+        on the caller's profile. Codes expire after 10 minutes. After 5 failed
+        attempts the record is deleted and a new code must be requested.
+        The 400 response for an incorrect code includes an attemptsRemaining
+        field alongside error.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  description: 6-digit verification code received via SMS
+                  example: "042817"
+      responses:
+        "200":
+          description: Code verified — phone number written to profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmsVerifyCodeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
 components:
   securitySchemes:
@@ -61,32 +366,683 @@ components:
     Error:
       type: object
       required:
-        - status
-        - message
+        - error
       properties:
-        status:
-          type: integer
-          description: HTTP status code
-          example: 400
-        message:
+        error:
           type: string
-          description: Human-readable error summary
-          example: "Validation failed"
+          description: Human-readable error message
+          example: "Invalid dateOfBirth; expected YYYY-MM-DD"
         details:
           type: array
-          description: Optional field-level validation errors
+          description: >
+            Optional supplementary error data. Shape varies by endpoint —
+            may contain field-level validation issues or other context.
           items:
             type: object
-            required:
-              - field
-              - message
-            properties:
-              field:
-                type: string
-                example: "email"
-              message:
-                type: string
-                example: "must be a valid email address"
+
+    UserProfile:
+      type: object
+      description: Authenticated distributor's own profile data.
+      required:
+        - clerkUserId
+        - influencerId
+        - rank
+        - walletBalanceCents
+        - phoneVerified
+        - isAdmin
+        - createdAt
+      properties:
+        clerkUserId:
+          type: string
+          description: Clerk authentication provider user ID; matches the active session
+          example: "user_2abc123"
+        influencerId:
+          type: string
+          description: System-assigned MLM influencer ID
+          example: "MH-004821"
+        rank:
+          type: string
+          description: Current MLM rank/tier
+          example: "Influencer"
+        firstName:
+          type: string
+          nullable: true
+          description: Given name, populated from OIDC claims or manual update
+          example: "Jane"
+        lastName:
+          type: string
+          nullable: true
+          description: Family name
+          example: "Smith"
+        email:
+          type: string
+          nullable: true
+          description: Email address
+          example: "jane.smith@example.com"
+        phone:
+          type: string
+          nullable: true
+          description: Phone number in E.164 or local format
+          example: "+14155550123"
+        phoneVerified:
+          type: boolean
+          description: Whether the phone number has been verified
+          example: false
+        dateOfBirth:
+          type: string
+          format: date
+          nullable: true
+          description: Date of birth in YYYY-MM-DD format
+          example: "1990-05-15"
+        walletBalanceCents:
+          type: integer
+          description: Current wallet balance in cents
+          example: 45000
+        isAdmin:
+          type: boolean
+          description: Whether the user has admin privileges
+          example: false
+        kwikApexId:
+          type: string
+          nullable: true
+          description: Sponsor code used to build referral share link URLs
+          example: "MH-004821"
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 account creation timestamp
+          example: "2025-11-03T08:14:22.000Z"
+
+    Kpi:
+      type: object
+      description: A single KPI metric with an optional week-over-week percentage change.
+      required:
+        - value
+        - deltaPct
+      properties:
+        value:
+          type: integer
+          description: Current value (cents for monetary KPIs, count for order KPIs)
+          example: 1250
+        deltaPct:
+          type: number
+          format: float
+          nullable: true
+          description: >
+            Percentage change vs the previous period, rounded to one decimal place.
+            Null when there is no prior-period data (e.g. new account).
+          example: 12.5
+
+    DashboardSalesPoint:
+      type: object
+      description: >
+        One data point in a time-series chart. Used for both salesByDay (7 points,
+        Mon–Sun) and earningsHistory (4 points, weekly). Note: value is in dollars,
+        not cents — the server divides by 100 before sending.
+      required:
+        - label
+        - value
+      properties:
+        label:
+          type: string
+          description: Display label for the x-axis
+          example: "Mon"
+        value:
+          type: number
+          format: float
+          description: Amount in dollars (not cents)
+          example: 42.50
+
+    DashboardVolume:
+      type: object
+      description: >
+        MLM volume breakdown for the current week, covering both personal orders
+        and personally sponsored (referred) orders. Legacy orders without separate
+        CV/QV fields fall back to amountCents for both markets.
+      required:
+        - totalCents
+        - deltaPct
+        - market1Cents
+        - market2Cents
+      properties:
+        totalCents:
+          type: integer
+          description: CV + QV combined across personal and referred orders
+          example: 320000
+        deltaPct:
+          type: number
+          format: float
+          nullable: true
+          description: Week-over-week percentage change. Null for new accounts.
+          example: -4.2
+        market1Cents:
+          type: integer
+          description: Commissionable Volume (CV)
+          example: 160000
+        market2Cents:
+          type: integer
+          description: Qualifying Volume (QV)
+          example: 160000
+
+    DashboardActivity:
+      type: object
+      description: One item in the recent activity feed.
+      required:
+        - id
+        - kind
+        - description
+        - amountCents
+        - occurredAt
+      properties:
+        id:
+          type: string
+          description: >
+            Stable unique identifier for this feed item. Prefixed by source:
+            order-{n}, referred-{n}, commission-{n}, order-status-{n}, activity-{n}.
+          example: "order-42"
+        kind:
+          type: string
+          description: >
+            Event type. Known values: order_received, referred_order,
+            commission_paid, order_status. May include custom kinds from the
+            activities table.
+          example: "order_received"
+        description:
+          type: string
+          description: Human-readable summary of the event
+          example: "Order #1042 from Jane Smith"
+        amountCents:
+          type: integer
+          nullable: true
+          description: Monetary amount in cents, or null for non-monetary events (e.g. order_status)
+          example: 7500
+        occurredAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the event
+          example: "2026-06-16T14:23:00Z"
+
+    DashboardKpis:
+      type: object
+      description: The four headline KPI cards shown on the dashboard.
+      required:
+        - totalOrders
+        - referredOrders
+        - volumeCents
+        - commissionsCents
+      properties:
+        totalOrders:
+          $ref: "#/components/schemas/Kpi"
+        referredOrders:
+          $ref: "#/components/schemas/Kpi"
+        volumeCents:
+          $ref: "#/components/schemas/Kpi"
+        commissionsCents:
+          $ref: "#/components/schemas/Kpi"
+
+    Dashboard:
+      type: object
+      description: Full dashboard payload returned by GET /dashboard.
+      required:
+        - walletBalanceCents
+        - weeklyEarningsCents
+        - ordersThisWeek
+        - rangeStart
+        - rangeEnd
+        - kpis
+        - salesByDay
+        - earningsHistory
+        - volume
+        - activity
+      properties:
+        walletBalanceCents:
+          type: integer
+          description: Current wallet balance in cents
+          example: 45000
+        weeklyEarningsCents:
+          type: integer
+          description: Sum of commissions on personal orders placed this week, in cents
+          example: 3200
+        ordersThisWeek:
+          type: integer
+          description: Count of personal orders placed in the current week
+          example: 5
+        rangeStart:
+          type: string
+          format: date-time
+          description: ISO 8601 start of the current week (Monday 00:00 UTC)
+          example: "2026-06-15T00:00:00.000Z"
+        rangeEnd:
+          type: string
+          format: date-time
+          description: ISO 8601 exclusive end of the current week (following Monday 00:00 UTC)
+          example: "2026-06-22T00:00:00.000Z"
+        kpis:
+          $ref: "#/components/schemas/DashboardKpis"
+        salesByDay:
+          type: array
+          description: Volume generated per day for the current week (Mon–Sun), values in dollars
+          minItems: 7
+          maxItems: 7
+          items:
+            $ref: "#/components/schemas/DashboardSalesPoint"
+        earningsHistory:
+          type: array
+          description: Commission earnings for each of the past 4 weeks (oldest first), values in dollars
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/DashboardSalesPoint"
+        volume:
+          $ref: "#/components/schemas/DashboardVolume"
+        activity:
+          type: array
+          description: Up to 10 most recent activity feed items, sorted newest first
+          maxItems: 10
+          items:
+            $ref: "#/components/schemas/DashboardActivity"
+
+    OrderLineItem:
+      type: object
+      description: One line item within an order.
+      required:
+        - title
+        - variantTitle
+        - sku
+        - quantity
+        - priceCents
+        - productId
+        - variantId
+      properties:
+        title:
+          type: string
+          description: Product title
+          example: "MoreHealth Starter Pack"
+        variantTitle:
+          type: string
+          nullable: true
+          description: Variant label (e.g. size or flavour), null when the product has no variants
+          example: "30-day supply"
+        sku:
+          type: string
+          nullable: true
+          description: Stock-keeping unit code
+          example: "MH-SP-001"
+        quantity:
+          type: integer
+          description: Number of units ordered
+          example: 2
+        priceCents:
+          type: integer
+          description: Unit price in cents
+          example: 4999
+        productId:
+          type: string
+          nullable: true
+          description: Shopify product ID
+          example: "8142637900001"
+        variantId:
+          type: string
+          nullable: true
+          description: Shopify variant ID
+          example: "44301827100001"
+
+    Order:
+      type: object
+      description: One order in the authenticated distributor's personal order history.
+      required:
+        - id
+        - orderName
+        - customerName
+        - productName
+        - amountCents
+        - cvCents
+        - qvCents
+        - status
+        - occurredAt
+        - lineItems
+      properties:
+        id:
+          type: integer
+          description: Internal order ID
+          example: 1042
+        orderName:
+          type: string
+          nullable: true
+          description: Human-readable order number assigned by the source system (e.g. "#1001"). Null for manually-entered orders.
+          example: "#1001"
+        customerName:
+          type: string
+          description: Buyer's full name
+          example: "Jane Smith"
+        productName:
+          type: string
+          description: Primary product name on the order
+          example: "MoreHealth Starter Pack"
+        amountCents:
+          type: integer
+          description: Order total in cents
+          example: 9998
+        cvCents:
+          type: integer
+          nullable: true
+          description: Commissionable Volume in cents. Null on legacy orders that predate CV/QV tracking.
+          example: 9998
+        qvCents:
+          type: integer
+          nullable: true
+          description: Qualifying Volume in cents. Null on legacy orders that predate CV/QV tracking.
+          example: 9998
+        status:
+          type: string
+          description: "Order lifecycle status. Known values: paid, shipped, delivered, refunded."
+          example: "paid"
+        occurredAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the order was placed
+          example: "2026-06-15T11:30:00.000Z"
+        lineItems:
+          type: array
+          description: Line items on the order. May be empty for legacy orders ingested without line-item detail.
+          items:
+            $ref: "#/components/schemas/OrderLineItem"
+
+    Pagination:
+      type: object
+      description: Standard pagination metadata returned by all list endpoints.
+      required:
+        - page
+        - limit
+        - total
+        - totalPages
+      properties:
+        page:
+          type: integer
+          description: Current page number (1-indexed)
+          example: 1
+        limit:
+          type: integer
+          description: Maximum number of items per page as requested
+          example: 20
+        total:
+          type: integer
+          description: Total number of records matching the query
+          example: 47
+        totalPages:
+          type: integer
+          description: Total number of pages — ceil(total / limit)
+          example: 3
+
+    OrdersPage:
+      type: object
+      description: Paginated list of the authenticated distributor's personal orders.
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Orders for the requested page, sorted newest first
+          items:
+            $ref: "#/components/schemas/Order"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    ReferredOrder:
+      type: object
+      description: >
+        An order placed through the authenticated distributor's referral link.
+        Extends Order with two additional fields present in the referred-orders
+        projection: currency and sponsorId.
+      allOf:
+        - $ref: "#/components/schemas/Order"
+        - type: object
+          required:
+            - currency
+            - sponsorId
+          properties:
+            currency:
+              type: string
+              description: ISO 4217 currency code for the order
+              example: "USD"
+            sponsorId:
+              type: string
+              nullable: true
+              description: >
+                Raw sponsor attribution value from the Shopify cart metafield
+                at order time. Matches the referrer's kwikApexId. Null when
+                attribution data was not present on the order.
+              example: "MH-004821"
+
+    ReferredOrdersPage:
+      type: object
+      description: Paginated list of orders placed through the authenticated distributor's referral link.
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Referred orders for the requested page, sorted newest first
+          items:
+            $ref: "#/components/schemas/ReferredOrder"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    OrderDiscountCode:
+      type: object
+      description: A discount code applied to an order.
+      required:
+        - code
+        - amountCents
+        - type
+      properties:
+        code:
+          type: string
+          description: Discount code string
+          example: "WELCOME10"
+        amountCents:
+          type: integer
+          description: Discount value in cents
+          example: 500
+        type:
+          type: string
+          nullable: true
+          description: Discount type as returned by Shopify (e.g. percentage, fixed_amount). Null when not provided.
+          example: "percentage"
+
+    OrderShippingAddress:
+      type: object
+      description: >
+        Shipping address on an order. All fields are nullable — Shopify webhook
+        payloads may arrive with partial address data.
+      properties:
+        firstName:
+          type: string
+          nullable: true
+          example: "Jane"
+        lastName:
+          type: string
+          nullable: true
+          example: "Smith"
+        phone:
+          type: string
+          nullable: true
+          example: "+14155550123"
+        line1:
+          type: string
+          nullable: true
+          example: "123 Main St"
+        line2:
+          type: string
+          nullable: true
+          example: "Apt 4B"
+        city:
+          type: string
+          nullable: true
+          example: "San Francisco"
+        region:
+          type: string
+          nullable: true
+          description: State or province
+          example: "CA"
+        postalCode:
+          type: string
+          nullable: true
+          example: "94105"
+        country:
+          type: string
+          nullable: true
+          example: "United States"
+        countryCode:
+          type: string
+          nullable: true
+          description: ISO 3166-1 alpha-2 country code
+          example: "US"
+
+    OrderDetail:
+      type: object
+      description: >
+        Full detail for one of the authenticated distributor's own orders.
+        Drops cvCents and qvCents (not included in the detail projection) and
+        adds customer contact, financial, fulfilment, and line-item detail fields.
+        lineItems reuses the same OrderLineItem schema as the list view.
+      required:
+        - id
+        - orderName
+        - customerName
+        - customerEmail
+        - customerPhone
+        - productName
+        - amountCents
+        - commissionCents
+        - currency
+        - status
+        - source
+        - occurredAt
+        - lineItems
+        - discountCodes
+        - shippingAddress
+        - note
+      properties:
+        id:
+          type: integer
+          description: Internal order ID
+          example: 1042
+        orderName:
+          type: string
+          nullable: true
+          description: Human-readable order number (e.g. "#1001"). Null for manually-entered orders.
+          example: "#1001"
+        customerName:
+          type: string
+          description: Buyer's full name
+          example: "Jane Smith"
+        customerEmail:
+          type: string
+          nullable: true
+          description: Buyer's email address
+          example: "jane.smith@example.com"
+        customerPhone:
+          type: string
+          nullable: true
+          description: Buyer's phone number
+          example: "+14155550123"
+        productName:
+          type: string
+          description: Primary product name on the order
+          example: "MoreHealth Starter Pack"
+        amountCents:
+          type: integer
+          description: Order total in cents
+          example: 9998
+        commissionCents:
+          type: integer
+          description: Commission earned on this order in cents
+          example: 1000
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: "USD"
+        status:
+          type: string
+          description: "Order lifecycle status. Known values: paid, shipped, delivered, refunded."
+          example: "paid"
+        source:
+          type: string
+          description: "Origin of the order. Known values: manual, shopify."
+          example: "shopify"
+        occurredAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the order was placed
+          example: "2026-06-15T11:30:00.000Z"
+        lineItems:
+          type: array
+          description: Line items on the order. May be empty for legacy orders ingested without line-item detail.
+          items:
+            $ref: "#/components/schemas/OrderLineItem"
+        discountCodes:
+          type: array
+          description: Discount codes applied to the order. Empty array when none were used.
+          items:
+            $ref: "#/components/schemas/OrderDiscountCode"
+        shippingAddress:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/OrderShippingAddress"
+          nullable: true
+          description: Shipping address for the order, or null if not captured.
+        note:
+          type: string
+          nullable: true
+          description: Customer-provided order note
+          example: "Please leave at door"
+
+    SmsSendCodeResponse:
+      type: object
+      description: >
+        Response from POST /sms/send-code. In production the code is sent via
+        SMS and not returned. In dev mode (no SMS provider configured) the code
+        is returned in the response body so the flow can be tested end-to-end.
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+          example: true
+        devMode:
+          type: boolean
+          description: Present and true when no SMS provider is configured (dev/staging only)
+          example: true
+        devCode:
+          type: string
+          description: The actual verification code — only present when devMode is true
+          example: "042817"
+
+    SmsVerifyCodeResponse:
+      type: object
+      description: >
+        Response from POST /sms/verify-code on successful verification.
+        The verified phone number is written to the caller's profile (phone +
+        phoneVerified = true). In dev mode a fixed bypass code ("111111") is
+        accepted and devBypass is returned.
+      required:
+        - ok
+        - phone
+      properties:
+        ok:
+          type: boolean
+          example: true
+        phone:
+          type: string
+          description: The verified phone number now stored on the profile
+          example: "+14155550123"
+        devBypass:
+          type: boolean
+          description: Present and true when the dev bypass code was used
+          example: true
 
   responses:
     BadRequest:
@@ -121,6 +1077,23 @@ components:
             $ref: "#/components/schemas/Error"
     InternalServerError:
       description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    TooManyRequests:
+      description: Rate limit exceeded — retry after the indicated delay
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ServiceUnavailable:
+      description: A required upstream service (e.g. SMS provider) is not configured or unreachable
       content:
         application/json:
           schema:
