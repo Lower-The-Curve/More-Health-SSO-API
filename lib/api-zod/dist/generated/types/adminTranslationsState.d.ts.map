@@ -1,1 +1,0 @@
-{"version":3,"file":"adminTranslationsState.d.ts","sourceRoot":"","sources":["../../../src/generated/types/adminTranslationsState.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,4BAA4B,EAAE,MAAM,gCAAgC,CAAC;AACnF,OAAO,KAAK,EAAE,+BAA+B,EAAE,MAAM,mCAAmC,CAAC;AAEzF,MAAM,WAAW,sBAAsB;IACrC,SAAS,EAAE,+BAA+B,CAAC;IAC3C,MAAM,EAAE,4BAA4B,CAAC;CACtC"}
