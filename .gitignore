@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# builds
+**/dist/
+**/build/
+**/.vite/
+**/.react-router/
+**/.out/
+**/.cache/
+
+# typescript incremental build cache
+**/*.tsbuildinfo
+
+# generated source files
+artifacts/mockup-sandbox/src/.generated/
+
+# replit platform metadata
+**/.replit-artifact/
+
+# logs
+*.log
+logs/
+
+# env
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
