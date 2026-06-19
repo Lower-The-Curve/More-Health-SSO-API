@@ -16,14 +16,18 @@ tags:
     description: Authentication and session management (OIDC/BFF)
   - name: profile
     description: Authenticated user's own profile and account settings
-  - name: onboarding
-    description: New-member onboarding flow
-  - name: signup
-    description: Distributor registration
+  - name: dashboard
+    description: Dashboard summary and KPI data
   - name: orders
     description: Personal order history and order details
   - name: referredOrders
     description: Orders placed through the authenticated distributor's referral link
+  - name: sms
+    description: SMS notification preferences and opt-in/out
+  - name: onboarding
+    description: New-member onboarding flow
+  - name: signup
+    description: Distributor registration
   - name: downline
     description: Downline network and team structure
   - name: sponsors
@@ -32,14 +36,10 @@ tags:
     description: Distributor-specific storefront configuration
   - name: addresses
     description: Shipping and billing address management
-  - name: sms
-    description: SMS notification preferences and opt-in/out
   - name: translations
     description: Localisation strings
   - name: appSettings
     description: Application-wide feature flags and configuration
-  - name: dashboard
-    description: Dashboard summary and KPI data
   - name: admin
     description: Admin-only operations (requires admin role)
   - name: webhooks
@@ -148,6 +148,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    patch:
+      tags: [profile]
+      operationId: updateProfile
+      summary: Update own profile
+      description: >
+        Partially updates the authenticated distributor's own profile.
+        Only firstName, lastName, phone, and dateOfBirth are writable.
+        String fields (firstName, lastName, phone) are applied only when
+        the value is a string — null and omitted values are silently ignored.
+        dateOfBirth accepts an ISO date string (YYYY-MM-DD) or null to clear;
+        any other type returns 400. Changing the phone number resets
+        phoneVerified to false. Returns the full updated profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
 
@@ -353,6 +382,471 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+
+  /placement:
+    get:
+      tags: [profile]
+      operationId: getPlacement
+      summary: Get MLM placement
+      description: >
+        Returns the authenticated distributor's MLM placement context —
+        their influencer ID, kwikApexId, current rank, join date, and
+        their sponsor (upline). The sponsor is inferred from the referrer
+        attached to their earliest attributed order; sponsor is null when
+        no such order exists.
+      responses:
+        "200":
+          description: Placement context for the authenticated distributor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Placement"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /share-links:
+    get:
+      tags: [appSettings]
+      operationId: getShareLinks
+      summary: Get share link URLs
+      description: >
+        Returns the base URLs and personalised share link URLs built from
+        the distributor's kwikApexId. All URL and ID fields are null when
+        no sponsorId or base URL is configured in app settings.
+      responses:
+        "200":
+          description: Share link configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShareLinks"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /display-flags:
+    get:
+      tags: [appSettings]
+      operationId: getDisplayFlags
+      summary: Get display flags
+      description: >
+        Returns boolean flags that control which sections of the dashboard
+        UI are visible for this distributor. Flags are managed by admins.
+      responses:
+        "200":
+          description: Display flag configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DisplayFlags"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /storefront:
+    get:
+      tags: [storefront]
+      operationId: getStorefront
+      summary: Get storefront analytics
+      description: >
+        Returns storefront performance metrics for the authenticated
+        distributor's share link for the specified date range. Defaults
+        to the current ISO week (Mon–Sun UTC) when no range is provided.
+        Both from and to must be supplied together; providing only one
+        returns a 400.
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: >
+            Range start date (YYYY-MM-DD, inclusive).
+            Defaults to the Monday of the current UTC week.
+          example: "2026-06-16"
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: >
+            Range end date (YYYY-MM-DD, exclusive).
+            Defaults to the Monday of the following UTC week.
+          example: "2026-06-23"
+      responses:
+        "200":
+          description: Storefront analytics for the requested period
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Storefront"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /translations:
+    get:
+      tags: [translations]
+      operationId: getPublishedTranslations
+      summary: Get published translations
+      description: >
+        Returns published translation overrides as a flat key-value map.
+        Keys are English strings; values are the published translation
+        (currently Simplified Chinese). This endpoint is public — no
+        session required.
+      security: []
+      responses:
+        "200":
+          description: Translation key-value map
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - translations
+                properties:
+                  translations:
+                    type: object
+                    additionalProperties:
+                      type: string
+                    description: Map of English source text to translated string
+                    example:
+                      Dashboard: "仪表板"
+                      Orders: "订单"
+
+  /addresses:
+    get:
+      tags: [addresses]
+      operationId: getAddresses
+      summary: List saved addresses
+      description: >
+        Returns all saved addresses for the authenticated distributor,
+        sorted by isDefault descending then createdAt descending
+        (default address appears first).
+      responses:
+        "200":
+          description: List of saved addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Address"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [addresses]
+      operationId: createAddress
+      summary: Create a new address
+      description: >
+        Creates a new saved address for the authenticated distributor.
+        When isDefault is true, the prior default address is automatically
+        demoted to non-default. country defaults to "CN" when omitted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - label
+                - recipient
+                - line1
+                - city
+                - region
+                - postalCode
+              properties:
+                label:
+                  type: string
+                  description: User-assigned label (e.g. "Home", "Office")
+                  example: "Home"
+                recipient:
+                  type: string
+                  description: Full name of the intended recipient
+                  example: "Jane Smith"
+                line1:
+                  type: string
+                  example: "123 Main St"
+                line2:
+                  type: string
+                  example: "Apt 4B"
+                city:
+                  type: string
+                  example: "Shanghai"
+                region:
+                  type: string
+                  description: State, province, or region
+                  example: "Shanghai"
+                postalCode:
+                  type: string
+                  example: "200000"
+                country:
+                  type: string
+                  description: ISO 3166-1 alpha-2 country code. Defaults to "CN".
+                  example: "CN"
+                isDefault:
+                  type: boolean
+                  description: When true, demotes the previous default address.
+                  example: false
+      responses:
+        "201":
+          description: Address created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /addresses/{id}:
+    patch:
+      tags: [addresses]
+      operationId: updateAddress
+      summary: Update an address
+      description: >
+        Partially updates a saved address. All body fields are optional.
+        Returns 400 on non-numeric id; 404 when the address does not
+        belong to the authenticated distributor.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Internal address ID
+          example: 7
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  example: "Work"
+                recipient:
+                  type: string
+                  example: "Jane Smith"
+                line1:
+                  type: string
+                  example: "456 Office Blvd"
+                line2:
+                  type: string
+                  nullable: true
+                  example: null
+                city:
+                  type: string
+                  example: "Beijing"
+                region:
+                  type: string
+                  example: "Beijing"
+                postalCode:
+                  type: string
+                  example: "100000"
+                country:
+                  type: string
+                  example: "CN"
+                isDefault:
+                  type: boolean
+                  example: true
+      responses:
+        "200":
+          description: Updated address
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [addresses]
+      operationId: deleteAddress
+      summary: Delete an address
+      description: >
+        Permanently deletes a saved address. Returns 400 on non-numeric id;
+        404 when the address does not belong to the authenticated distributor.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Internal address ID
+          example: 7
+      responses:
+        "204":
+          description: Address deleted
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /signup/check-email:
+    post:
+      tags: [signup]
+      operationId: checkEmail
+      summary: Check if email is already registered
+      description: >
+        Checks whether an email address is already registered in the system.
+        Used during signup to surface conflicts before the full form is
+        submitted. This endpoint is public — no session required. Rate-limited.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "jane.smith@example.com"
+      responses:
+        "200":
+          description: Email lookup result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - exists
+                properties:
+                  exists:
+                    type: boolean
+                    description: True when the email address is already registered
+                    example: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /onboarding/lookup-order:
+    post:
+      tags: [onboarding]
+      operationId: lookupOnboardingOrder
+      summary: Look up an existing order for onboarding
+      description: >
+        Looks up an existing customer order to pre-fill the affiliate
+        registration form. At least one of orderName or email must be
+        provided. Returns 409 with alreadyClaimed: true when the order
+        is already linked to an affiliate account. This endpoint is
+        public — no session required. Rate-limited.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderName:
+                  type: string
+                  description: Shopify order name (e.g. "#1001")
+                  example: "#1001"
+                email:
+                  type: string
+                  format: email
+                  description: Customer email address
+                  example: "jane.smith@example.com"
+      responses:
+        "200":
+          description: Order found and available for onboarding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingOrderResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /onboarding/create-affiliate:
+    post:
+      tags: [onboarding]
+      operationId: createAffiliate
+      summary: Create new affiliate account
+      description: >
+        Creates a new distributor/affiliate account. This endpoint is
+        public — no session required. Rate-limited. Returns 403 when the
+        email is already registered. Returns 502 on Kwik API failure and
+        503 when the Kwik integration is not configured.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - givenName
+                - familyName
+                - phoneNumber
+                - acceptsMarketing
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "jane.smith@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "S3cureP@ssw0rd"
+                givenName:
+                  type: string
+                  example: "Jane"
+                familyName:
+                  type: string
+                  example: "Smith"
+                phoneNumber:
+                  type: string
+                  example: "+14155550123"
+                acceptsMarketing:
+                  type: boolean
+                  example: true
+      responses:
+        "200":
+          description: Affiliate account created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - ok
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
 
 components:
   securitySchemes:
@@ -1044,6 +1538,425 @@ components:
           description: Present and true when the dev bypass code was used
           example: true
 
+    UpdateProfileRequest:
+      type: object
+      description: >
+        Writable fields for PATCH /profile. All fields are optional.
+        String fields (firstName, lastName, phone) are applied only when
+        the value is a string — null and omitted values are silently ignored
+        for those fields. dateOfBirth accepts a date string (YYYY-MM-DD)
+        or null to clear; any other type returns 400.
+      properties:
+        firstName:
+          type: string
+          description: Given name
+          example: "Jane"
+        lastName:
+          type: string
+          description: Family name
+          example: "Smith"
+        phone:
+          type: string
+          description: Phone number in E.164 or local format
+          example: "+14155550123"
+        dateOfBirth:
+          type: string
+          format: date
+          nullable: true
+          description: Date of birth (YYYY-MM-DD). Pass null to clear.
+          example: "1990-05-15"
+
+    Address:
+      type: object
+      description: One of the authenticated distributor's saved shipping/billing addresses.
+      required:
+        - id
+        - label
+        - recipient
+        - line1
+        - city
+        - region
+        - postalCode
+        - isDefault
+      properties:
+        id:
+          type: integer
+          description: Internal address ID
+          example: 7
+        label:
+          type: string
+          description: User-assigned label (e.g. "Home", "Office")
+          example: "Home"
+        recipient:
+          type: string
+          description: Full name of the intended recipient
+          example: "Jane Smith"
+        line1:
+          type: string
+          description: Street address line 1
+          example: "123 Main St"
+        line2:
+          type: string
+          nullable: true
+          description: Street address line 2 (suite, floor, etc.)
+          example: "Apt 4B"
+        city:
+          type: string
+          example: "Shanghai"
+        region:
+          type: string
+          description: State, province, or region
+          example: "Shanghai"
+        postalCode:
+          type: string
+          example: "200000"
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code
+          example: "CN"
+        isDefault:
+          type: boolean
+          description: Whether this is the distributor's default address
+          example: false
+
+    ShareLinks:
+      type: object
+      description: >
+        Personalised share link URLs for the authenticated distributor.
+        All URL and ID fields are null when no kwikApexId or base URL is
+        configured.
+      required:
+        - shopBaseUrl
+        - enrollBaseUrl
+        - siteBaseUrl
+        - sponsorId
+        - shopShareUrl
+        - enrollShareUrl
+        - siteShareUrl
+      properties:
+        shopBaseUrl:
+          type: string
+          nullable: true
+          description: Base URL of the distributor's shop (without sponsor param)
+          example: "https://shop.morehealth.com"
+        enrollBaseUrl:
+          type: string
+          nullable: true
+          description: Base URL of the enrollment page
+          example: "https://enroll.morehealth.com"
+        siteBaseUrl:
+          type: string
+          nullable: true
+          description: Base URL of the distributor site
+          example: "https://morehealth.com"
+        sponsorId:
+          type: string
+          nullable: true
+          description: The distributor's kwikApexId used as the sponsor param in share URLs
+          example: "MH-004821"
+        shopShareUrl:
+          type: string
+          nullable: true
+          description: Full personalised shop URL with sponsor param appended
+          example: "https://shop.morehealth.com?sponsor_id=MH-004821"
+        enrollShareUrl:
+          type: string
+          nullable: true
+          description: Full personalised enrollment URL with sponsor param appended
+          example: "https://enroll.morehealth.com?sponsor_id=MH-004821"
+        siteShareUrl:
+          type: string
+          nullable: true
+          description: Full personalised site URL with sponsor param appended
+          example: "https://morehealth.com?sponsor_id=MH-004821"
+
+    DisplayFlags:
+      type: object
+      description: Feature flags that control which sections of the dashboard UI are visible.
+      required:
+        - hideVolume
+        - hideInfluencerStatus
+        - hideEarnings
+      properties:
+        hideVolume:
+          type: boolean
+          description: When true, hide the Volume section from the dashboard
+          example: false
+        hideInfluencerStatus:
+          type: boolean
+          description: When true, hide the influencer status / rank badge
+          example: false
+        hideEarnings:
+          type: boolean
+          description: When true, hide the earnings and commission sections
+          example: false
+
+    StorefrontProduct:
+      type: object
+      description: One entry in the storefront's most-ordered products list.
+      required:
+        - name
+        - units
+        - revenueCents
+      properties:
+        name:
+          type: string
+          description: Product name
+          example: "MoreHealth Starter Pack"
+        units:
+          type: integer
+          description: Total units ordered in the period
+          example: 12
+        revenueCents:
+          type: integer
+          description: Total revenue from this product in cents
+          example: 59988
+
+    StorefrontKpi:
+      type: object
+      description: A storefront KPI metric paired with a period-over-period delta.
+      required:
+        - value
+        - deltaPct
+      properties:
+        value:
+          type: integer
+          description: Current period value (cents for monetary metrics, count otherwise)
+          example: 8
+        deltaPct:
+          type: number
+          format: float
+          nullable: true
+          description: Percentage change vs the previous period. Null when no prior data.
+          example: -12.5
+
+    StorefrontConversionRate:
+      type: object
+      description: >
+        Storefront conversion-rate metric. value is a float percentage,
+        unlike other StorefrontKpi metrics which are integers.
+      required:
+        - value
+        - deltaPct
+      properties:
+        value:
+          type: number
+          format: float
+          description: Conversion rate as a percentage (e.g. 2.47 means 2.47%)
+          example: 2.47
+        deltaPct:
+          type: number
+          format: float
+          nullable: true
+          description: Percentage change vs the previous period. Null when no prior data.
+          example: 5.1
+
+    Storefront:
+      type: object
+      description: >
+        Storefront analytics payload for the authenticated distributor's
+        share link, covering the requested date range and its comparison period.
+      required:
+        - shopShareUrl
+        - rangeStart
+        - rangeEnd
+        - prevRangeStart
+        - prevRangeEnd
+        - orders
+        - revenueCents
+        - storeVisits
+        - conversionRate
+        - avgOrderValueCents
+        - mostOrdered
+      properties:
+        shopShareUrl:
+          type: string
+          nullable: true
+          description: The distributor's personalised shop share URL
+          example: "https://shop.morehealth.com?sponsor_id=MH-004821"
+        rangeStart:
+          type: string
+          format: date
+          description: Start of the requested date range (YYYY-MM-DD, inclusive)
+          example: "2026-06-16"
+        rangeEnd:
+          type: string
+          format: date
+          description: End of the requested date range (YYYY-MM-DD, exclusive)
+          example: "2026-06-23"
+        prevRangeStart:
+          type: string
+          format: date
+          description: Start of the comparison period
+          example: "2026-06-09"
+        prevRangeEnd:
+          type: string
+          format: date
+          description: End of the comparison period (exclusive)
+          example: "2026-06-16"
+        orders:
+          $ref: "#/components/schemas/StorefrontKpi"
+        revenueCents:
+          $ref: "#/components/schemas/StorefrontKpi"
+        storeVisits:
+          $ref: "#/components/schemas/StorefrontKpi"
+        conversionRate:
+          $ref: "#/components/schemas/StorefrontConversionRate"
+        avgOrderValueCents:
+          $ref: "#/components/schemas/StorefrontKpi"
+        mostOrdered:
+          type: array
+          description: Top products by units ordered in the period
+          items:
+            $ref: "#/components/schemas/StorefrontProduct"
+
+    PlacementSponsor:
+      type: object
+      description: Summary profile of the authenticated distributor's MLM upline sponsor.
+      required:
+        - clerkUserId
+        - influencerId
+        - rank
+      properties:
+        clerkUserId:
+          type: string
+          description: Clerk user ID of the sponsor
+          example: "user_2xyz789"
+        firstName:
+          type: string
+          nullable: true
+          example: "Bob"
+        lastName:
+          type: string
+          nullable: true
+          example: "Jones"
+        influencerId:
+          type: string
+          description: MLM influencer ID of the sponsor
+          example: "MH-002001"
+        rank:
+          type: string
+          description: Current MLM rank of the sponsor
+          example: "Senior Influencer"
+        kwikApexId:
+          type: string
+          nullable: true
+          description: Referral sponsor code of the sponsor
+          example: "MH-002001"
+
+    Placement:
+      type: object
+      description: >
+        The authenticated distributor's placement in the MLM network.
+        Includes their own identifiers, join date, current rank, and —
+        when derivable — their sponsor (upline) inferred from the referrer
+        on their earliest attributed order.
+      required:
+        - influencerId
+        - rank
+        - joinedAt
+        - sponsorId
+        - sponsor
+      properties:
+        influencerId:
+          type: string
+          description: System-assigned MLM influencer ID
+          example: "MH-004821"
+        kwikApexId:
+          type: string
+          nullable: true
+          description: Referral sponsor code used in share URLs
+          example: "MH-004821"
+        rank:
+          type: string
+          description: Current MLM rank
+          example: "Influencer"
+        joinedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the account was created
+          example: "2025-11-03T08:14:22.000Z"
+        sponsorId:
+          type: string
+          nullable: true
+          description: >
+            Raw sponsor attribution value from the earliest order with a referrer.
+            Matches the sponsor's kwikApexId. Null when no attributed order exists.
+          example: "MH-002001"
+        sponsor:
+          type: object
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PlacementSponsor"
+          description: Sponsor's profile, or null when no sponsor is attributable.
+
+    OnboardingOrderResult:
+      type: object
+      description: >
+        Existing order data returned by POST /onboarding/lookup-order,
+        used to pre-fill the affiliate registration form.
+      required:
+        - orderName
+        - email
+      properties:
+        orderName:
+          type: string
+          nullable: true
+          description: Shopify order name (e.g. "#1001")
+          example: "#1001"
+        email:
+          type: string
+          nullable: true
+          description: Customer email address on the order
+          example: "jane.smith@example.com"
+        phone:
+          type: string
+          nullable: true
+          description: Customer phone number on the order
+          example: "+14155550123"
+        firstName:
+          type: string
+          nullable: true
+          example: "Jane"
+        lastName:
+          type: string
+          nullable: true
+          example: "Smith"
+        shippingAddress:
+          type: object
+          nullable: true
+          description: Shipping address from the order, or null when not captured.
+          properties:
+            line1:
+              type: string
+              nullable: true
+              example: "123 Main St"
+            line2:
+              type: string
+              nullable: true
+              example: "Apt 4B"
+            city:
+              type: string
+              nullable: true
+              example: "Shanghai"
+            region:
+              type: string
+              nullable: true
+              example: "Shanghai"
+            postalCode:
+              type: string
+              nullable: true
+              example: "200000"
+            country:
+              type: string
+              nullable: true
+              example: "China"
+            countryCode:
+              type: string
+              nullable: true
+              description: ISO 3166-1 alpha-2 country code
+              example: "CN"
+
   responses:
     BadRequest:
       description: Malformed request or failed input validation
@@ -1094,6 +2007,31 @@ components:
             $ref: "#/components/schemas/Error"
     ServiceUnavailable:
       description: A required upstream service (e.g. SMS provider) is not configured or unreachable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: >
+        Resource conflict — the request cannot be completed in the current state.
+        For onboarding lookup, includes alreadyClaimed: true when the order
+        is already linked to an affiliate account.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - error
+            properties:
+              error:
+                type: string
+                example: "Order already claimed"
+              alreadyClaimed:
+                type: boolean
+                description: Present and true when the conflict is a claimed onboarding order
+                example: true
+    BadGateway:
+      description: An upstream service returned an unexpected or invalid response
       content:
         application/json:
           schema:
