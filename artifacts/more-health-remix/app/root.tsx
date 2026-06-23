@@ -1,10 +1,15 @@
 import type { LinksFunction } from "react-router";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import stylesheet from "~/styles/globals.css?url";
+import userData from "~/data/user.json";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
 ];
+
+export async function loader() {
+  return userData;
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

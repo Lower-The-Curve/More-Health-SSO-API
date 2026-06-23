@@ -1,6 +1,7 @@
 import React from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useRouteLoaderData } from "react-router";
 import { BrandLogo } from "~/components/shared/BrandLogo";
+import type { loader as rootLoader } from "~/root";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   LayoutDashboard,
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const { pathname } = useLocation();
+  const user = useRouteLoaderData<typeof rootLoader>("root");
 
   return (
     <div className="w-[248px] h-screen bg-card border-r border-border flex flex-col fixed left-0 top-0">
@@ -46,12 +48,12 @@ export function Sidebar() {
       <div className="px-4 mb-6">
         <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border/50">
           <Avatar className="w-10 h-10 border border-background">
-            <AvatarFallback className="bg-primary/10 text-primary font-medium">BC</AvatarFallback>
-            <AvatarImage src="https://i.pravatar.cc/150?u=brady" />
+            <AvatarFallback className="bg-primary/10 text-primary font-medium">{user?.initials}</AvatarFallback>
+            <AvatarImage src={user?.avatarUrl} />
           </Avatar>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Brady Chen</span>
-            <span className="text-xs text-muted-foreground">Gold Partner</span>
+            <span className="text-sm font-semibold">{user?.name}</span>
+            <span className="text-xs text-muted-foreground">{user?.partnerStatus}</span>
           </div>
         </div>
       </div>
@@ -94,7 +96,7 @@ export function Sidebar() {
         <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-4 rounded-xl shadow-sm flex flex-col gap-1 relative overflow-hidden group cursor-pointer hover:shadow-md transition-all">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
           <span className="text-xs opacity-80 font-medium">Wallet Balance</span>
-          <span className="text-xl font-bold display-num tabular-nums tracking-tight">¥12,480.00</span>
+          <span className="text-xl font-bold display-num tabular-nums tracking-tight">{user?.walletBalance}</span>
         </div>
       </div>
     </div>

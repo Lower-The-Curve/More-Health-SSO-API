@@ -1,0 +1,89 @@
+{
+  "hero": {
+    "currentPeriod": "Apr 11 – Apr 17, 2026",
+    "previousPeriod": "Apr 4 – Apr 10",
+    "walletBalance": "¥12,480",
+    "weeklyEarnings": "¥3,248",
+    "ordersGenerated": 142
+  },
+  "kpis": [
+    {
+      "label": "Total Orders",
+      "value": "84",
+      "delta": "+12.4%",
+      "trend": "up",
+      "sparklineData": [5, 10, 15, 12, 18, 25, 20],
+      "sparklineColor": "#10b981"
+    },
+    {
+      "label": "Referred Orders",
+      "value": "62",
+      "delta": "+8.2%",
+      "trend": "up",
+      "sparklineData": [3, 5, 8, 12, 15, 10, 14],
+      "sparklineColor": "#10b981"
+    },
+    {
+      "label": "Personal Orders",
+      "value": "22",
+      "delta": "-2.1%",
+      "trend": "down",
+      "sparklineData": [10, 8, 5, 6, 4, 3, 2],
+      "sparklineColor": "#ef4444"
+    },
+    {
+      "label": "Repeat Customers",
+      "value": "68%",
+      "delta": "+5.4%",
+      "trend": "up",
+      "sparklineData": [40, 45, 50, 55, 60, 65, 68],
+      "sparklineColor": "#10b981"
+    }
+  ],
+  "salesChart": [
+    { "name": "Mon", "value": 4000 },
+    { "name": "Tue", "value": 3000 },
+    { "name": "Wed", "value": 5000 },
+    { "name": "Thu", "value": 2780 },
+    { "name": "Fri", "value": 6890 },
+    { "name": "Sat", "value": 8390 },
+    { "name": "Sun", "value": 10490 }
+  ],
+  "earningsChart": [
+    { "name": "Mar 23–29", "value": 1200 },
+    { "name": "Mar 30–Apr 5", "value": 1500 },
+    { "name": "Apr 6–12", "value": 1800 },
+    { "name": "Apr 13–19", "value": 2200 }
+  ],
+  "trafficSources": [
+    { "name": "WeChat / 微信",        "value": 45, "color": "bg-emerald-500" },
+    { "name": "Xiaohongshu / 小红书", "value": 30, "color": "bg-red-500" },
+    { "name": "Douyin / 抖音",        "value": 15, "color": "bg-black" },
+    { "name": "Direct Link",          "value": 10, "color": "bg-gray-400" }
+  ],
+  "activityFeed": [
+    {
+      "id": 1,
+      "type": "purchase",
+      "text": "John bought SomaDerm Transdermal Gel",
+      "amount": "+¥244.80 commission",
+      "time": "Today, 2:14 PM · 2h ago",
+      "avatar": "J"
+    },
+    {
+      "id": 2,
+      "type": "subscription",
+      "text": "Lisa subscribed monthly to Revitalize Eye Cream",
+      "time": "Today, 11:02 AM · 5h ago",
+      "avatar": "L"
+    },
+    {
+      "id": 3,
+      "type": "payout",
+      "text": "Wallet payout sent",
+      "amount": "¥3,200",
+      "time": "Yesterday, 6:48 PM",
+      "avatar": "MH"
+    }
+  ]
+}

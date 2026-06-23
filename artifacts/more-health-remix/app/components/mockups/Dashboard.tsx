@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useRouteLoaderData } from "react-router";
+import type { loader as rootLoader } from "~/root";
 import { AppLayout } from "~/components/shared/AppLayout";
 import { Kpi } from "~/components/shared/Kpi";
 import { Sparkline } from "~/components/shared/Sparkline";
@@ -6,31 +8,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-const SALES_DATA = [
-  { name: 'Mon', value: 4000 },
-  { name: 'Tue', value: 3000 },
-  { name: 'Wed', value: 5000 },
-  { name: 'Thu', value: 2780 },
-  { name: 'Fri', value: 6890 },
-  { name: 'Sat', value: 8390 },
-  { name: 'Sun', value: 10490 },
-];
 
-const EARNINGS_DATA = [
-  { name: 'Mar 23–29', value: 1200 },
-  { name: 'Mar 30–Apr 5', value: 1500 },
-  { name: 'Apr 6–12', value: 1800 },
-  { name: 'Apr 13–19', value: 2200 },
-];
+type DashboardData = {
+  hero: {
+    currentPeriod: string;
+    previousPeriod: string;
+    walletBalance: string;
+    weeklyEarnings: string;
+    ordersGenerated: number;
+  };
+  kpis: Array<{
+    label: string;
+    value: string;
+    delta: string;
+    trend: "up" | "down";
+    sparklineData: number[];
+    sparklineColor: string;
+  }>;
+  salesChart: Array<{ name: string; value: number }>;
+  earningsChart: Array<{ name: string; value: number }>;
+  trafficSources: Array<{ name: string; value: number; color: string }>;
+  activityFeed: Array<{
+    id: number;
+    type: string;
+    text: string;
+    amount?: string;
+    time: string;
+    avatar: string;
+  }>;
+};
 
-const ACTIVITY_FEED = [
-  { id: 1, type: 'purchase', text: 'John bought SomaDerm Transdermal Gel', amount: '+¥244.80 commission', time: 'Today, 2:14 PM · 2h ago', avatar: 'J' },
-  { id: 2, type: 'subscription', text: 'Lisa subscribed monthly to Revitalize Eye Cream', time: 'Today, 11:02 AM · 5h ago', avatar: 'L' },
-  { id: 3, type: 'payout', text: 'Wallet payout sent', amount: '¥3,200', time: 'Yesterday, 6:48 PM', avatar: 'MH' },
-];
-
-export function Dashboard() {
+export function Dashboard({ data }: { data: DashboardData }) {
   const [timeRange, setTimeRange] = useState("7");
+  const user = useRouteLoaderData<typeof rootLoader>("root");
 
   return (
     <AppLayout>
@@ -43,15 +53,15 @@ export function Dashboard() {
 
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-8">
             <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-display font-bold tracking-tight">Welcome back, Brady <span className="font-sans font-normal text-primary-foreground/80">欢迎回来</span></h1>
+              <h1 className="text-3xl font-display font-bold tracking-tight">Welcome back, {user?.firstName} <span className="font-sans font-normal text-primary-foreground/80">欢迎回来</span></h1>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
                   <span className="w-2 h-2 rounded-full bg-accent"></span>
                   Gold Partner / 金牌伙伴
                 </div>
                 <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-primary-foreground/90">
-                  <span>Apr 11 – Apr 17, 2026</span>
-                  <span className="text-primary-foreground/60">vs. Apr 4 – Apr 10</span>
+                  <span>{data.hero.currentPeriod}</span>
+                  <span className="text-primary-foreground/60">vs. {data.hero.previousPeriod}</span>
                 </div>
               </div>
             </div>
@@ -59,17 +69,17 @@ export function Dashboard() {
             <div className="flex gap-8 bg-black/10 backdrop-blur-md rounded-2xl p-6 border border-white/10">
               <div className="flex flex-col gap-1">
                 <span className="text-primary-foreground/70 text-sm font-medium">Wallet Balance</span>
-                <span className="text-3xl font-bold display-num tabular-nums tracking-tight">¥12,480</span>
+                <span className="text-3xl font-bold display-num tabular-nums tracking-tight">{data.hero.walletBalance}</span>
               </div>
               <div className="w-px bg-white/20"></div>
               <div className="flex flex-col gap-1">
                 <span className="text-primary-foreground/70 text-sm font-medium">Earnings This Week</span>
-                <span className="text-3xl font-bold display-num tabular-nums tracking-tight">¥3,248</span>
+                <span className="text-3xl font-bold display-num tabular-nums tracking-tight">{data.hero.weeklyEarnings}</span>
               </div>
               <div className="w-px bg-white/20"></div>
               <div className="flex flex-col gap-1">
                 <span className="text-primary-foreground/70 text-sm font-medium">Orders Generated</span>
-                <span className="text-3xl font-bold display-num tabular-nums tracking-tight">142</span>
+                <span className="text-3xl font-bold display-num tabular-nums tracking-tight">{data.hero.ordersGenerated}</span>
               </div>
             </div>
           </div>
@@ -77,10 +87,16 @@ export function Dashboard() {
 
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Kpi label="Total Orders" value="84" delta="+12.4%" sparkline={<Sparkline color="#10b981" data={[5, 10, 15, 12, 18, 25, 20]}/>} />
-          <Kpi label="Referred Orders" value="62" delta="+8.2%" sparkline={<Sparkline color="#10b981" data={[3, 5, 8, 12, 15, 10, 14]}/>} />
-          <Kpi label="Personal Orders" value="22" delta="-2.1%" trend="down" sparkline={<Sparkline color="#ef4444" data={[10, 8, 5, 6, 4, 3, 2]}/>} />
-          <Kpi label="Repeat Customers" value="68%" delta="+5.4%" sparkline={<Sparkline color="#10b981" data={[40, 45, 50, 55, 60, 65, 68]}/>} />
+          {data.kpis.map((kpi) => (
+            <Kpi
+              key={kpi.label}
+              label={kpi.label}
+              value={kpi.value}
+              delta={kpi.delta}
+              trend={kpi.trend}
+              sparkline={<Sparkline color={kpi.sparklineColor} data={kpi.sparklineData} />}
+            />
+          ))}
         </div>
 
         {/* CHARTS */}
@@ -103,7 +119,7 @@ export function Dashboard() {
             <CardContent>
               <div className="h-[250px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={SALES_DATA} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <AreaChart data={data.salesChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
@@ -133,7 +149,7 @@ export function Dashboard() {
             <CardContent>
               <div className="h-[250px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={EARNINGS_DATA} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <BarChart data={data.earningsChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6b7280' }} dy={10} interval={0} />
                     <Tooltip
@@ -157,12 +173,7 @@ export function Dashboard() {
               <CardTitle className="text-lg font-semibold">Traffic Sources</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {[
-                { name: 'WeChat / 微信', value: 45, color: 'bg-emerald-500' },
-                { name: 'Xiaohongshu / 小红书', value: 30, color: 'bg-red-500' },
-                { name: 'Douyin / 抖音', value: 15, color: 'bg-black' },
-                { name: 'Direct Link', value: 10, color: 'bg-gray-400' },
-              ].map((item) => (
+              {data.trafficSources.map((item) => (
                 <div key={item.name} className="flex flex-col gap-2">
                   <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-foreground">{item.name}</span>
@@ -183,7 +194,7 @@ export function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {ACTIVITY_FEED.map((item) => (
+                {data.activityFeed.map((item) => (
                   <div key={item.id} className="flex items-start gap-4">
                     <Avatar className="w-10 h-10 border border-border bg-secondary flex items-center justify-center text-sm font-semibold text-muted-foreground">
                       {item.avatar}
