@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "~/components/ui/card";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
@@ -8,7 +9,7 @@ export function Kpi({
   delta,
   trend = "up",
   sparkline,
-  compare = "vs. previous 7 days"
+  compare,
 }: {
   label: string,
   value: string,
@@ -17,6 +18,7 @@ export function Kpi({
   sparkline?: React.ReactNode,
   compare?: string
 }) {
+  const { t } = useTranslation("dashboard");
   return (
     <Card className="shadow-sm border-border/50 bg-card overflow-hidden hover:shadow-md transition-all duration-300 group">
       <CardContent className="p-5 flex flex-col justify-between h-full relative">
@@ -34,8 +36,8 @@ export function Kpi({
               {delta}
             </div>
           )}
-          {compare && (
-            <span className="text-[11px] text-muted-foreground leading-none">{compare}</span>
+          {(compare ?? t("kpi.compare")) && (
+            <span className="text-[11px] text-muted-foreground leading-none">{compare ?? t("kpi.compare")}</span>
           )}
         </div>
 

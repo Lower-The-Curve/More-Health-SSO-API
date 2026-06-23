@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRouteLoaderData } from "react-router";
+import { useTranslation } from "react-i18next";
 import type { loader as rootLoader } from "~/root";
 import { AppLayout } from "~/components/shared/AppLayout";
 import { Kpi } from "~/components/shared/Kpi";
@@ -8,8 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-
-type DashboardData = {
+export type DashboardData = {
   hero: {
     currentPeriod: string;
     previousPeriod: string;
@@ -41,6 +41,7 @@ type DashboardData = {
 export function Dashboard({ data }: { data: DashboardData }) {
   const [timeRange, setTimeRange] = useState("7");
   const user = useRouteLoaderData<typeof rootLoader>("root");
+  const { t } = useTranslation("dashboard");
 
   return (
     <AppLayout>
@@ -53,11 +54,15 @@ export function Dashboard({ data }: { data: DashboardData }) {
 
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-8">
             <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-display font-bold tracking-tight">Welcome back, {user?.firstName} <span className="font-sans font-normal text-primary-foreground/80">欢迎回来</span></h1>
+              <h1 className="text-3xl font-display font-bold tracking-tight">
+                {t("hero.greeting", { name: user?.firstName })}
+                {" "}
+                <span className="font-sans font-normal text-primary-foreground/80">{t("hero.greetingSecondary")}</span>
+              </h1>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
                   <span className="w-2 h-2 rounded-full bg-accent"></span>
-                  Gold Partner / 金牌伙伴
+                  {t("hero.partnerBadge")}
                 </div>
                 <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-primary-foreground/90">
                   <span>{data.hero.currentPeriod}</span>
@@ -68,17 +73,17 @@ export function Dashboard({ data }: { data: DashboardData }) {
 
             <div className="flex gap-8 bg-black/10 backdrop-blur-md rounded-2xl p-6 border border-white/10">
               <div className="flex flex-col gap-1">
-                <span className="text-primary-foreground/70 text-sm font-medium">Wallet Balance</span>
+                <span className="text-primary-foreground/70 text-sm font-medium">{t("hero.walletBalance")}</span>
                 <span className="text-3xl font-bold display-num tabular-nums tracking-tight">{data.hero.walletBalance}</span>
               </div>
               <div className="w-px bg-white/20"></div>
               <div className="flex flex-col gap-1">
-                <span className="text-primary-foreground/70 text-sm font-medium">Earnings This Week</span>
+                <span className="text-primary-foreground/70 text-sm font-medium">{t("hero.weeklyEarnings")}</span>
                 <span className="text-3xl font-bold display-num tabular-nums tracking-tight">{data.hero.weeklyEarnings}</span>
               </div>
               <div className="w-px bg-white/20"></div>
               <div className="flex flex-col gap-1">
-                <span className="text-primary-foreground/70 text-sm font-medium">Orders Generated</span>
+                <span className="text-primary-foreground/70 text-sm font-medium">{t("hero.ordersGenerated")}</span>
                 <span className="text-3xl font-bold display-num tabular-nums tracking-tight">{data.hero.ordersGenerated}</span>
               </div>
             </div>
@@ -103,7 +108,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2 shadow-sm rounded-2xl border-border/50">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-semibold">Sales Trend</CardTitle>
+              <CardTitle className="text-lg font-semibold">{t("charts.salesTrend")}</CardTitle>
               <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg border border-border/50">
                 {['7', '30', '90'].map(d => (
                   <button
@@ -111,7 +116,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
                     onClick={() => setTimeRange(d)}
                     className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${timeRange === d ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   >
-                    {d} Days
+                    {t("charts.days", { count: d })}
                   </button>
                 ))}
               </div>
@@ -133,7 +138,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
                       labelStyle={{ color: '#6b7280', marginBottom: '4px' }}
                       itemStyle={{ color: '#111827', fontWeight: 600 }}
-                      formatter={(val) => [`¥${val}`, 'Sales']}
+                      formatter={(val) => [`¥${val}`, t("charts.salesTooltip")]}
                     />
                     <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
                   </AreaChart>
@@ -144,7 +149,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
 
           <Card className="shadow-sm rounded-2xl border-border/50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold">Earnings Growth</CardTitle>
+              <CardTitle className="text-lg font-semibold">{t("charts.earningsGrowth")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[250px] w-full mt-4">
@@ -155,8 +160,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
                     <Tooltip
                       cursor={{ fill: '#f3f4f6' }}
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                      formatter={(val) => [`¥${val}`, 'Earnings']}
-                      labelFormatter={(label) => `Week of ${label}`}
+                      formatter={(val) => [`¥${val}`, t("charts.earningsTooltip")]}
+                      labelFormatter={(label) => t("charts.weekOf", { week: label })}
                     />
                     <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={40} />
                   </BarChart>
@@ -170,7 +175,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="shadow-sm rounded-2xl border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">Traffic Sources</CardTitle>
+              <CardTitle className="text-lg font-semibold">{t("trafficSources")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {data.trafficSources.map((item) => (
@@ -189,8 +194,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
 
           <Card className="shadow-sm rounded-2xl border-border/50">
             <CardHeader className="flex flex-row justify-between items-center">
-              <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
-              <button className="text-sm font-medium text-primary hover:underline">View All</button>
+              <CardTitle className="text-lg font-semibold">{t("activity.title")}</CardTitle>
+              <button className="text-sm font-medium text-primary hover:underline">{t("activity.viewAll")}</button>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">

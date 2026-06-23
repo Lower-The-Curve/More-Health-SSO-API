@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "dashboard": "仪表盘",
+    "shop": "商城",
+    "enroll": "邀请伙伴",
+    "storefront": "我的店铺",
+    "wallet": "钱包",
+    "subscriptions": "订阅",
+    "earnings": "收入",
+    "analytics": "数据分析",
+    "orders": "订单",
+    "team": "团队队列",
+    "notifications": "通知",
+    "settings": "设置",
+    "support": "支持"
+  },
+  "sidebar": {
+    "walletBalance": "钱包余额"
+  },
+  "header": {
+    "searchPlaceholder": "搜索订单、伙伴、产品...",
+    "languageToggle": "中 / EN"
+  },
+  "pages": {
+    "analytics":     { "title": "数据分析", "subtitle": "Analytics" },
+    "earnings":      { "title": "收入",     "subtitle": "Earnings" },
+    "enroll":        { "title": "邀请伙伴", "subtitle": "Enroll Partner" },
+    "notifications": { "title": "通知",     "subtitle": "Notifications" },
+    "orders":        { "title": "订单",     "subtitle": "Orders" },
+    "settings":      { "title": "设置",     "subtitle": "Settings" },
+    "shop":          { "title": "商城",     "subtitle": "Shop Products" },
+    "storefront":    { "title": "我的店铺", "subtitle": "My Storefront" },
+    "subscriptions": { "title": "订阅",     "subtitle": "Subscriptions" },
+    "support":       { "title": "支持",     "subtitle": "Support" },
+    "team":          { "title": "团队队列", "subtitle": "Team Builder" },
+    "wallet":        { "title": "钱包",     "subtitle": "Wallet" }
+  }
+}

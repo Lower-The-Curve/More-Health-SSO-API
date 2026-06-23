@@ -1,8 +1,9 @@
 import React from "react";
 import { Link, useLocation, useRouteLoaderData } from "react-router";
+import { useTranslation } from "react-i18next";
 import { BrandLogo } from "~/components/shared/BrandLogo";
-import type { loader as rootLoader } from "~/root";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import type { loader as rootLoader } from "~/root";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -20,24 +21,25 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: "Dashboard", zh: "仪表盘", id: "dashboard", path: "/" },
-  { icon: ShoppingBag,     label: "Shop Products",  zh: "商城",    id: "shop",           path: "/shop" },
-  { icon: UserPlus,        label: "Enroll Partner", zh: "邀请伙伴", id: "enroll",         path: "/enroll" },
-  { icon: Store,           label: "My Storefront",  zh: "我的店铺", id: "storefront",     path: "/storefront" },
-  { icon: Wallet,          label: "Wallet",         zh: "钱包",    id: "wallet",         path: "/wallet" },
-  { icon: Repeat,          label: "Subscriptions",  zh: "订阅",    id: "subscriptions",  path: "/subscriptions" },
-  { icon: LineChart,       label: "Earnings",       zh: "收入",    id: "earnings",       path: "/earnings" },
-  { icon: BarChart3,       label: "Analytics",      zh: "数据分析", id: "analytics",      path: "/analytics" },
-  { icon: ShoppingBasket,  label: "Orders",         zh: "订单",    id: "orders",         path: "/orders" },
-  { icon: Users,           label: "Team Builder",   zh: "团队队列", id: "team",           path: "/team" },
-  { icon: Bell,            label: "Notifications",  zh: "通知",    id: "notifications",  path: "/notifications", badge: 3 },
-  { icon: Settings,        label: "Settings",       zh: "设置",    id: "settings",       path: "/settings" },
-  { icon: LifeBuoy,        label: "Support",        zh: "支持",    id: "support",        path: "/support" },
+  { icon: LayoutDashboard, id: "dashboard",     path: "/" },
+  { icon: ShoppingBag,     id: "shop",          path: "/shop" },
+  { icon: UserPlus,        id: "enroll",        path: "/enroll" },
+  { icon: Store,           id: "storefront",    path: "/storefront" },
+  { icon: Wallet,          id: "wallet",        path: "/wallet" },
+  { icon: Repeat,          id: "subscriptions", path: "/subscriptions" },
+  { icon: LineChart,       id: "earnings",      path: "/earnings" },
+  { icon: BarChart3,       id: "analytics",     path: "/analytics" },
+  { icon: ShoppingBasket,  id: "orders",        path: "/orders" },
+  { icon: Users,           id: "team",          path: "/team" },
+  { icon: Bell,            id: "notifications", path: "/notifications", badge: 3 },
+  { icon: Settings,        id: "settings",      path: "/settings" },
+  { icon: LifeBuoy,        id: "support",       path: "/support" },
 ];
 
 export function Sidebar() {
   const { pathname } = useLocation();
   const user = useRouteLoaderData<typeof rootLoader>("root");
+  const { t } = useTranslation("common");
 
   return (
     <div className="w-[248px] h-screen bg-card border-r border-border flex flex-col fixed left-0 top-0">
@@ -74,17 +76,13 @@ export function Sidebar() {
             >
               <div className="flex items-center gap-3">
                 <Icon className={`w-4 h-4 ${isActive ? "opacity-100" : "opacity-70"}`} />
-                <span>{item.label}</span>
+                <span>{t(`nav.${item.id}`)}</span>
               </div>
-              {item.badge ? (
+              {item.badge && (
                 <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${
                   isActive ? "bg-white/20 text-primary-foreground" : "bg-primary/10 text-primary"
                 }`}>
                   {item.badge}
-                </span>
-              ) : (
-                <span className={`text-[10px] ${isActive ? "text-primary-foreground/70" : "opacity-0"}`}>
-                  {item.zh}
                 </span>
               )}
             </Link>
@@ -95,7 +93,7 @@ export function Sidebar() {
       <div className="p-4 mt-auto border-t border-border">
         <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-4 rounded-xl shadow-sm flex flex-col gap-1 relative overflow-hidden group cursor-pointer hover:shadow-md transition-all">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-          <span className="text-xs opacity-80 font-medium">Wallet Balance</span>
+          <span className="text-xs opacity-80 font-medium">{t("sidebar.walletBalance")}</span>
           <span className="text-xl font-bold display-num tabular-nums tracking-tight">{user?.walletBalance}</span>
         </div>
       </div>

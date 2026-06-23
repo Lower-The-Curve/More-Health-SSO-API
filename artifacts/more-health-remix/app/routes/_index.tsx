@@ -1,6 +1,7 @@
 import type { MetaFunction } from "react-router";
 import { useLoaderData } from "react-router";
 import { Dashboard } from "~/components/mockups/Dashboard";
+import type { DashboardData } from "~/components/mockups/Dashboard";
 import dashboardData from "~/data/dashboard.json";
 
 export const meta: MetaFunction = () => [
@@ -8,7 +9,7 @@ export const meta: MetaFunction = () => [
 ];
 
 export async function loader() {
-  return dashboardData;
+  return dashboardData as DashboardData;
 }
 
 export default function Index() {

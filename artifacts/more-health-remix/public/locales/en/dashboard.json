@@ -1,0 +1,26 @@
+{
+  "hero": {
+    "greeting": "Welcome back, {{name}}",
+    "greetingSecondary": "欢迎回来",
+    "partnerBadge": "Gold Partner / 金牌伙伴",
+    "walletBalance": "Wallet Balance",
+    "weeklyEarnings": "Earnings This Week",
+    "ordersGenerated": "Orders Generated"
+  },
+  "charts": {
+    "salesTrend": "Sales Trend",
+    "days": "{{count}} Days",
+    "salesTooltip": "Sales",
+    "earningsGrowth": "Earnings Growth",
+    "earningsTooltip": "Earnings",
+    "weekOf": "Week of {{week}}"
+  },
+  "trafficSources": "Traffic Sources",
+  "activity": {
+    "title": "Recent Activity",
+    "viewAll": "View All"
+  },
+  "kpi": {
+    "compare": "vs. previous 7 days"
+  }
+}

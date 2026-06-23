@@ -1,0 +1,26 @@
+{
+  "hero": {
+    "greeting": "{{name}}，欢迎回来",
+    "greetingSecondary": "Welcome back",
+    "partnerBadge": "金牌伙伴 / Gold Partner",
+    "walletBalance": "钱包余额",
+    "weeklyEarnings": "本周收入",
+    "ordersGenerated": "生成订单"
+  },
+  "charts": {
+    "salesTrend": "销售趋势",
+    "days": "{{count}} 天",
+    "salesTooltip": "销售额",
+    "earningsGrowth": "收入增长",
+    "earningsTooltip": "收入",
+    "weekOf": "{{week}} 周"
+  },
+  "trafficSources": "流量来源",
+  "activity": {
+    "title": "最近活动",
+    "viewAll": "查看全部"
+  },
+  "kpi": {
+    "compare": "与前7天相比"
+  }
+}
