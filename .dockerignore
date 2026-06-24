@@ -1,0 +1,9 @@
+.git
+.gitignore
+node_modules
+**/node_modules
+**/build
+**/.react-router
+attached_assets
+replit.md
+*.md
