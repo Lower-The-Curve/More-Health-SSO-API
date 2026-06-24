@@ -1,4 +1,5 @@
 packages:
+  - dashboard
   - artifacts/*
   - lib/*
   - lib/integrations/*
