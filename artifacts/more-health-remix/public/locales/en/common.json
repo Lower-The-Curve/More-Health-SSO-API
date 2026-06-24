@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "shop": "Shop Products",
+    "enroll": "Enroll Partner",
+    "storefront": "My Storefront",
+    "wallet": "Wallet",
+    "subscriptions": "Subscriptions",
+    "earnings": "Earnings",
+    "analytics": "Analytics",
+    "orders": "Orders",
+    "team": "Team Builder",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "support": "Support"
+  },
+  "sidebar": {
+    "walletBalance": "Wallet Balance"
+  },
+  "header": {
+    "searchPlaceholder": "Search orders, partners, products...",
+    "languageToggle": "EN / 中"
+  },
+  "pages": {
+    "analytics":     { "title": "Analytics",      "subtitle": "数据分析" },
+    "earnings":      { "title": "Earnings",        "subtitle": "收入" },
+    "enroll":        { "title": "Enroll Partner",  "subtitle": "邀请伙伴" },
+    "notifications": { "title": "Notifications",   "subtitle": "通知" },
+    "orders":        { "title": "Orders",          "subtitle": "订单" },
+    "settings":      { "title": "Settings",        "subtitle": "设置" },
+    "shop":          { "title": "Shop Products",   "subtitle": "商城" },
+    "storefront":    { "title": "My Storefront",   "subtitle": "我的店铺" },
+    "subscriptions": { "title": "Subscriptions",   "subtitle": "订阅" },
+    "support":       { "title": "Support",         "subtitle": "支持" },
+    "team":          { "title": "Team Builder",    "subtitle": "团队队列" },
+    "wallet":        { "title": "Wallet",          "subtitle": "钱包" }
+  }
+}
